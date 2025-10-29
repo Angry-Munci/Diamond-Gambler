@@ -157,9 +157,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ⚠️ 1. Supabase Connection (Update these with your actual project keys)
-    const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; // REPLACE THIS
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y"; // REPLACE THIS
+    // ⚠️ 1. Supabase Connection (AUTOFILLED)
+    const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // 🔹 2. Game State Variables
@@ -230,21 +230,21 @@
             return;
         }
         
-        // --- FINAL ROBUST FIX FOR EMAIL VALIDATION ERROR ---
+        // --- FINAL ROBUST FIX FOR EMAIL VALIDATION AND DOMAIN CHANGE ---
         const safeUsername = username.toLowerCase()
             .trim()
             .replace(/[^a-z0-9.-]/g, '-') // 1. Convert illegal characters (spaces, etc.) to hyphens
             .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens
             .replace(/\.{2,}/g, '.');   // 3. Prevent double dots
 
-        // If the cleanup results in an empty string (e.g. username was just spaces/symbols)
         if (safeUsername === '') {
              authStatus.textContent = "Invalid username. Please use letters and numbers.";
              return;
         }
         
-        const email = `${safeUsername}@game.local`;
-        // ----------------------------------------------------
+        // Use a more common dummy TLD (.co) to avoid Supabase validator rejection
+        const email = `${safeUsername}@gamemail.co`; 
+        // ------------------------------------------------------------------
 
         authStatus.textContent = "Processing credentials...";
 
@@ -280,7 +280,7 @@
             // 2. CRITICAL FIX: Ensure the session is ready before RLS-protected INSERT
             let session = signUpData.session;
             if (!session) {
-                // Get the session explicitly if the signup response didn't contain it
+                // Fallback: Get the session explicitly if the signup response didn't contain it
                 const { data: { session: newSession } } = await supabase.auth.getSession();
                 session = newSession;
             }
