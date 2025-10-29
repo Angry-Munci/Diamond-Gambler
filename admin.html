@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Slots Admin Panel</title>
+    <title>Diamond Slots Admin Panel (Advanced)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            max-width: 800px;
             margin: 20px auto;
         }
         input, button {
@@ -53,25 +53,26 @@
     </style>
 </head>
 <body>
-    <h1>💎 Admin Control Panel</h1>
+    <h1>💎 Advanced Admin Control Panel</h1>
 
     <div id="loginBox">
-        <h2>Admin Login</h2>
+        <h2>Admin Login (Supabase Auth)</h2>
         <input type="text" id="adminUser" placeholder="Admin Username">
-        <input type="password" id="adminPass" placeholder="Admin Password">
-        <button onclick="loginAdmin()">Login</button>
-    </div>
+        <input type="password" id="adminPass" placeholder="Password">
+        <button onclick="loginAdmin()">Login Securely</button>
+        </div>
 
     <div id="adminPanel" style="display:none;">
         <h2>Player Management</h2>
         <button onclick="resetDiamonds()" style="background-color: #d9534f;">⚠️ Reset ALL Diamonds to 0</button>
+        <button onclick="loadPlayers()" style="background-color: #5bc0de;">🔄 Refresh Player List</button>
         <div id="playerTable">
             </div>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js"></script>
     <script>
-        // 🔑 1. CONFIGURATION (REPLACE THESE PLACEHOLDERS)
+        // 🔑 1. CONFIGURATION (REPLACE WITH YOUR KEYS/URLS)
         const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; // REPLACE THIS
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y"; // REPLACE THIS
 
@@ -80,23 +81,49 @@
         const GIVE_DIAMONDS_FUNCTION_URL = "https://your-project-ref.supabase.co/functions/v1/admin-give-diamonds"; // <<< REPLACE THIS!
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // 🔒 Admin credentials (INSECURE: Change these if using this in production)
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "diamond123";
         const PLAYER_TABLE = "players"; 
 
-        // --- 2. AUTHENTICATION ---
-        function loginAdmin() {
-            const user = document.getElementById("adminUser").value;
-            const pass = document.getElementById("adminPass").value;
+        // --- 2. ADVANCED AUTHENTICATION (Uses Supabase Auth and RBAC Check) ---
+        async function loginAdmin() {
+            const username = document.getElementById("adminUser").value;
+            const password = document.getElementById("adminPass").value;
 
-            if (user === ADMIN_USER && pass === ADMIN_PASS) {
+            if (!username || !password) return alert("Enter both username and password.");
+
+            let authStatus = document.getElementById("loginBox").querySelector('#statusMessage');
+            if (!authStatus) {
+                authStatus = document.createElement('p');
+                authStatus.id = 'statusMessage';
+                document.getElementById("loginBox").appendChild(authStatus);
+            }
+            authStatus.textContent = "Attempting secure login...";
+
+            // Use the same email convention as the main game (crucial for Auth matching)
+            const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@game.local`; 
+
+            // 1. Authenticate the user
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                authStatus.textContent = "❌ Login failed: " + error.message;
+                return;
+            }
+
+            // 2. CHECK FOR ADMIN ROLE (RBAC) via the custom claim in the JWT
+            const isAdmin = data.session.user.app_metadata.is_admin === true;
+
+            if (isAdmin) {
+                authStatus.textContent = `✅ Welcome Admin: ${username}!`;
                 document.getElementById("loginBox").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
                 loadPlayers();
             } else {
-                alert("❌ Wrong username or password!");
+                // Sign out the non-admin user immediately for security
+                await supabase.auth.signOut();
+                authStatus.textContent = "🔒 Access Denied: You are not an authorized administrator.";
             }
         }
 
@@ -105,7 +132,7 @@
             // SELECT works because RLS SELECT is set to TRUE for 'anon' and 'authenticated'
             const { data, error } = await supabase
                 .from(PLAYER_TABLE)
-                .select("id, username, diamonds")
+                .select("id, username, diamonds, is_admin") 
                 .order("diamonds", { ascending: false });
 
             if (error) {
@@ -114,16 +141,21 @@
             }
 
             let html = `<table>
-                <tr><th>Username</th><th>Diamonds</th><th>Action</th></tr>`;
+                <tr><th>Username</th><th>Diamonds</th><th>Admin</th><th>Action</th></tr>`;
 
             data.forEach(player => {
-                // The 'player.id' here is the secure UUID needed for the Edge Function
+                const adminStatus = player.is_admin ? '✅' : '❌';
+                const toggleAction = player.is_admin ? 'Revoke Admin' : 'Grant Admin';
+                const toggleColor = player.is_admin ? '#f0ad4e' : '#5cb85c';
+
                 html += `<tr>
                     <td>${player.username}</td>
                     <td>${player.diamonds}</td>
+                    <td>${adminStatus}</td>
                     <td>
                         <input type="number" id="add-${player.id}" placeholder="Add amount" style="width:80px;">
                         <button onclick="giveDiamonds('${player.id}')">💎 Give</button>
+                        <button onclick="toggleAdmin('${player.id}', ${!player.is_admin})" style="background-color:${toggleColor};">${toggleAction}</button>
                     </td>
                 </tr>`;
             });
@@ -132,21 +164,44 @@
             document.getElementById("playerTable").innerHTML = html;
         }
 
+        // --- 4. SECURE FUNCTION: Toggle Admin Status ---
+        async function toggleAdmin(playerId, becomeAdmin) {
+            if (!confirm(`Are you sure you want to ${becomeAdmin ? 'GRANT' : 'REVOKE'} admin status for this user?`)) return;
 
-        // --- 4. SECURE FUNCTION CALL: GIVE DIAMONDS (Calls the Edge Function) ---
+            try {
+                // This update relies on the currently logged-in admin user having update privileges.
+                // A dedicated RLS policy for admins is the most robust solution here.
+                const { error } = await supabase
+                    .from(PLAYER_TABLE)
+                    .update({ is_admin: becomeAdmin })
+                    .eq('id', playerId);
+
+                if (error) {
+                    alert("❌ Failed to change role: " + error.message + ". Check your RLS or use a dedicated Edge Function for this update.");
+                } else {
+                    alert(`✅ Admin status ${becomeAdmin ? 'GRANTED' : 'REVOKED'}. The user must log out and back in to refresh their permissions.`);
+                    loadPlayers();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+
+        // --- 5. SECURE FUNCTION CALL: GIVE DIAMONDS (Calls the Edge Function) ---
         async function giveDiamonds(playerId) {
             const input = document.getElementById(`add-${playerId}`);
             const addAmount = parseInt(input.value);
             
             if (isNaN(addAmount) || addAmount === 0) return alert("Enter a valid non-zero amount!");
             
-            // The Edge Function has the 'service_role' key access, allowing it to bypass RLS.
             try {
+                // Calls the secure Edge Function which uses the service key to bypass RLS.
                 const response = await fetch(GIVE_DIAMONDS_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        player_id: playerId, // Send the secure player ID (UUID)
+                        player_id: playerId, 
                         amount_to_add: addAmount
                     })
                 });
@@ -156,7 +211,7 @@
                 if (response.ok && result.success) {
                     alert(`✅ ${addAmount} Diamonds added!`);
                     input.value = ''; 
-                    loadPlayers(); // Refresh the table
+                    loadPlayers(); 
                 } else {
                     alert("❌ Error giving diamonds: " + (result.error || "Unknown error"));
                 }
@@ -166,14 +221,14 @@
             }
         }
 
-        // --- 5. SECURE FUNCTION CALL: RESET DIAMONDS (Calls the Edge Function) ---
+        // --- 6. SECURE FUNCTION CALL: RESET DIAMONDS (Calls the Edge Function) ---
         async function resetDiamonds() {
             if (!confirm("⚠️ Are you sure you want to reset ALL players' diamonds to 0? This cannot be undone.")) return;
 
             try {
+                // Calls the secure Edge Function which uses the service key to bypass RLS.
                 const response = await fetch(RESET_FUNCTION_URL, {
                     method: 'POST',
-                    // No body is needed, as the function resets everyone
                     headers: { 'Content-Type': 'application/json' },
                 });
 
