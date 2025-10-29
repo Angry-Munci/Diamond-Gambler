@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diamond Slots</title>
     <style>
-        /* CSS styles remain the same for visual appearance */
         body {
             margin: 0;
             background: radial-gradient(circle at center, #0b001f 0%, #000 100%);
@@ -92,7 +91,7 @@
         #leaderboardList li {
             text-align: left;
             padding: 5px 0;
-            list-style-type: none; /* Remove default bullets/numbers */
+            list-style-type: none; 
             border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
         }
 
@@ -158,8 +157,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     // ⚠️ 1. Supabase Connection (Update these with your actual project keys)
-    const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y";
+    const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; // REPLACE THIS
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y"; // REPLACE THIS
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // 🔹 2. Game State Variables
@@ -189,7 +188,6 @@
     async function loadUserProfile(userId) {
         currentUserId = userId;
 
-        // Fetch user data from the players table (RLS SELECT policy allows this)
         const { data: profile, error } = await supabase
             .from(PLAYER_TABLE)
             .select("username, diamonds")
@@ -208,7 +206,6 @@
         loginBox.style.display = 'block';
         gameArea.style.display = 'block';
         
-        // Hide Login/Register, Show Logout
         loginBox.querySelector('input:nth-child(1)').style.display = 'none';
         loginBox.querySelector('input:nth-child(2)').style.display = 'none';
         loginBox.querySelector('button:nth-child(3)').style.display = 'none';
@@ -217,11 +214,10 @@
         authStatus.textContent = `Welcome, ${currentUsername}!`;
         updateDisplay();
         
-        // Start Realtime Listener for the Leaderboard
         setupRealtimeLeaderboard();
     }
 
-    // Secure Login / Signup Function
+    // Secure Login / Signup Function (FIXED)
     async function handleAuth() {
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
@@ -231,7 +227,11 @@
             return;
         }
         
-        const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@game.local`; 
+        // --- FIX IS HERE ---
+        const safeUsername = username.toLowerCase().trim().replace(/[^a-z0-9.-]/g, '-');
+        const email = `${safeUsername}@game.local`;
+        // -------------------
+
         authStatus.textContent = "Processing credentials...";
 
         // A. Attempt Login
@@ -241,7 +241,6 @@
         });
 
         if (sessionData?.user) {
-             // Successful Login
              await loadUserProfile(sessionData.user.id);
              return;
         } 
@@ -293,21 +292,20 @@
         gameArea.style.display = 'none';
         authStatus.textContent = "Please log in or register to play.";
         
-        // Show Login/Register, Hide Logout
         loginBox.querySelector('input:nth-child(1)').style.display = 'inline-block';
         loginBox.querySelector('input:nth-child(2)').style.display = 'inline-block';
         loginBox.querySelector('button:nth-child(3)').style.display = 'inline-block';
         logoutBtn.style.display = 'none';
 
         document.getElementById("leaderboardList").innerHTML = '<li>Loading...</li>';
-        supabase.removeAllChannels(); // Stop Realtime subscription
+        supabase.removeAllChannels(); 
+        fetchLeaderboard(); // Load the static leaderboard if not logged in
     }
 
     // Save Diamonds to Supabase (Secured by RLS UPDATE policy)
     async function saveDiamonds() {
         if (!currentUserId) return;
         
-        // This UPDATE works because the RLS policy (auth.uid() = id) allows it.
         const { error } = await supabase
             .from(PLAYER_TABLE)
             .update({ diamonds })
@@ -346,18 +344,16 @@
 
     // --- 4. REALTIME LEADERBOARD ---
     function setupRealtimeLeaderboard() {
-        // Subscribe to changes in the 'players' table
         supabase
             .channel('leaderboard-changes')
             .on('postgres_changes', { 
                 event: 'UPDATE', 
                 schema: 'public', 
                 table: PLAYER_TABLE 
-            }, fetchLeaderboard) // Rerun the fetch function when any row is updated
+            }, fetchLeaderboard)
             .subscribe();
 
-        // Initial fetch
-        fetchLeaderboard();
+        fetchLeaderboard(); 
     }
 
     // --- 5. GAME LOGIC ---
@@ -369,7 +365,7 @@
         }
 
         if (!freeSpin) {
-            diamonds -= 50; // Deduct cost
+            diamonds -= 50; 
         }
         freeSpin = false;
 
@@ -384,7 +380,6 @@
         document.getElementById("slot2").textContent = s2;
         document.getElementById("slot3").textContent = s3;
 
-        // Check result
         if (s1 === s2 && s2 === s3) {
             let reward = 500 * rewardMultiplier;
             
@@ -402,7 +397,7 @@
         }
 
         updateDisplay();
-        saveDiamonds(); // Save diamonds after the spin result (triggers Realtime Leaderboard update)
+        saveDiamonds(); 
     }
 
     // --- 6. POWER-UP FUNCTIONS (Simplified to only call updateDisplay/saveDiamonds) ---
@@ -454,12 +449,10 @@
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-            // User is already logged in, load their profile
             await loadUserProfile(session.user.id);
         } else {
-            // No session, show the login screen
             resetUI();
-            setupRealtimeLeaderboard(); // Still show the leaderboard even if logged out
+            setupRealtimeLeaderboard(); 
         }
     }
 
@@ -468,3 +461,4 @@
 
 </body>
 </html>
+
