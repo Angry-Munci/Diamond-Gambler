@@ -98,8 +98,10 @@
             }
             authStatus.textContent = "Attempting secure login...";
 
-            // Use the same email convention as the main game (crucial for Auth matching)
-            const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@game.local`; 
+            // --- FIX IS HERE ---
+            const safeUsername = username.toLowerCase().trim().replace(/[^a-z0-9.-]/g, '-');
+            const email = `${safeUsername}@game.local`;
+            // -------------------
 
             // 1. Authenticate the user
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -129,7 +131,6 @@
 
         // --- 3. LOAD PLAYERS (SELECT is allowed by RLS) ---
         async function loadPlayers() {
-            // SELECT works because RLS SELECT is set to TRUE for 'anon' and 'authenticated'
             const { data, error } = await supabase
                 .from(PLAYER_TABLE)
                 .select("id, username, diamonds, is_admin") 
@@ -169,8 +170,6 @@
             if (!confirm(`Are you sure you want to ${becomeAdmin ? 'GRANT' : 'REVOKE'} admin status for this user?`)) return;
 
             try {
-                // This update relies on the currently logged-in admin user having update privileges.
-                // A dedicated RLS policy for admins is the most robust solution here.
                 const { error } = await supabase
                     .from(PLAYER_TABLE)
                     .update({ is_admin: becomeAdmin })
@@ -196,7 +195,6 @@
             if (isNaN(addAmount) || addAmount === 0) return alert("Enter a valid non-zero amount!");
             
             try {
-                // Calls the secure Edge Function which uses the service key to bypass RLS.
                 const response = await fetch(GIVE_DIAMONDS_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -226,7 +224,6 @@
             if (!confirm("⚠️ Are you sure you want to reset ALL players' diamonds to 0? This cannot be undone.")) return;
 
             try {
-                // Calls the secure Edge Function which uses the service key to bypass RLS.
                 const response = await fetch(RESET_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
