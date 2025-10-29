@@ -149,7 +149,7 @@
         <h3>🏆 Live Leaderboard</h3>
         <ul id="leaderboardList">
             <li>Loading...</li>
-        </div>
+        </ul>
     </div>
 
     <audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-slot-machine-loop-2067.mp3"></audio>
@@ -189,6 +189,7 @@
     async function loadUserProfile(userId) {
         currentUserId = userId;
 
+        // RLS SELECT is applied here.
         const { data: profile, error } = await supabase
             .from(PLAYER_TABLE)
             .select("username, diamonds")
@@ -207,6 +208,7 @@
         loginBox.style.display = 'block';
         gameArea.style.display = 'block';
         
+        // Hide login fields and show logout button
         loginBox.querySelector('input:nth-child(1)').style.display = 'none';
         loginBox.querySelector('input:nth-child(2)').style.display = 'none';
         loginBox.querySelector('button:nth-child(3)').style.display = 'none';
@@ -232,9 +234,15 @@
         const safeUsername = username.toLowerCase()
             .trim()
             .replace(/[^a-z0-9.-]/g, '-') // 1. Convert illegal characters (spaces, etc.) to hyphens
-            .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens (Crucial fix)
+            .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens
             .replace(/\.{2,}/g, '.');   // 3. Prevent double dots
 
+        // If the cleanup results in an empty string (e.g. username was just spaces/symbols)
+        if (safeUsername === '') {
+             authStatus.textContent = "Invalid username. Please use letters and numbers.";
+             return;
+        }
+        
         const email = `${safeUsername}@game.local`;
         // ----------------------------------------------------
 
@@ -256,6 +264,7 @@
         if (loginError && loginError.message === 'Invalid login credentials') {
             authStatus.textContent = "Attempting registration...";
             
+            // 1. Create the user in auth.users
             let { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -268,16 +277,30 @@
                  return;
             }
 
-            // After successful signup, insert the profile row (RLS INSERT policy allows this)
-            const { error: insertError } = await supabase.from(PLAYER_TABLE).insert([{ id: signUpData.user.id, username: username, diamonds: STARTING_DIAMONDS }]);
-                
-            if (insertError) {
-                authStatus.textContent = `Registration Error: New row violates row-level security policy for table "players". Did you use unique credentials?`;
-                await supabase.auth.signOut(); 
-                return;
+            // 2. CRITICAL FIX: Ensure the session is ready before RLS-protected INSERT
+            let session = signUpData.session;
+            if (!session) {
+                // Get the session explicitly if the signup response didn't contain it
+                const { data: { session: newSession } } = await supabase.auth.getSession();
+                session = newSession;
             }
 
-            await loadUserProfile(signUpData.user.id);
+            if (session) {
+                // 3. RLS-protected INSERT into public.players
+                const { error: insertError } = await supabase.from(PLAYER_TABLE).insert([{ id: session.user.id, username: username, diamonds: STARTING_DIAMONDS }]);
+                    
+                if (insertError) {
+                    // This error indicates the RLS INSERT policy is still incorrect or the username/ID already exists.
+                    authStatus.textContent = `Registration Error: Profile creation failed (RLS issue). Please ensure the INSERT policy is set to "auth.uid() = id".`;
+                    await supabase.auth.signOut(); // Log out the partial user
+                    return;
+                }
+
+                await loadUserProfile(session.user.id);
+
+            } else {
+                 authStatus.textContent = "Registration failed: Could not establish a session after signup.";
+            }
 
         } else if (loginError) {
              authStatus.textContent = `Login Error: ${loginError.message}`;
@@ -314,6 +337,7 @@
     async function saveDiamonds() {
         if (!currentUserId) return;
         
+        // RLS UPDATE is applied here.
         const { error } = await supabase
             .from(PLAYER_TABLE)
             .update({ diamonds })
@@ -332,6 +356,7 @@
 
     // Fetch and display the Leaderboard
     async function fetchLeaderboard() {
+        // RLS SELECT is applied here.
         const { data, error } = await supabase
             .from(PLAYER_TABLE)
             .select("username, diamonds")
@@ -361,7 +386,6 @@
             }, fetchLeaderboard)
             .subscribe();
         
-        // Initial fetch is handled here to ensure it runs
         fetchLeaderboard(); 
     }
 
