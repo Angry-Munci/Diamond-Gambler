@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diamond Slots</title>
     <style>
+        /* CSS styles remain the same for visual appearance */
         body {
             margin: 0;
             background: radial-gradient(circle at center, #0b001f 0%, #000 100%);
@@ -148,7 +149,7 @@
         <h3>🏆 Live Leaderboard</h3>
         <ul id="leaderboardList">
             <li>Loading...</li>
-        </ul>
+        </div>
     </div>
 
     <audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-slot-machine-loop-2067.mp3"></audio>
@@ -217,7 +218,7 @@
         setupRealtimeLeaderboard();
     }
 
-    // Secure Login / Signup Function (FIXED)
+    // Secure Login / Signup Function (FINAL FIXED VERSION)
     async function handleAuth() {
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
@@ -227,10 +228,15 @@
             return;
         }
         
-        // --- FIX IS HERE ---
-        const safeUsername = username.toLowerCase().trim().replace(/[^a-z0-9.-]/g, '-');
+        // --- FINAL ROBUST FIX FOR EMAIL VALIDATION ERROR ---
+        const safeUsername = username.toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9.-]/g, '-') // 1. Convert illegal characters (spaces, etc.) to hyphens
+            .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens (Crucial fix)
+            .replace(/\.{2,}/g, '.');   // 3. Prevent double dots
+
         const email = `${safeUsername}@game.local`;
-        // -------------------
+        // ----------------------------------------------------
 
         authStatus.textContent = "Processing credentials...";
 
@@ -241,6 +247,7 @@
         });
 
         if (sessionData?.user) {
+             // Successful Login
              await loadUserProfile(sessionData.user.id);
              return;
         } 
@@ -265,8 +272,8 @@
             const { error: insertError } = await supabase.from(PLAYER_TABLE).insert([{ id: signUpData.user.id, username: username, diamonds: STARTING_DIAMONDS }]);
                 
             if (insertError) {
-                authStatus.textContent = `Registration Error: ${insertError.message}`;
-                await supabase.auth.signOut();
+                authStatus.textContent = `Registration Error: New row violates row-level security policy for table "players". Did you use unique credentials?`;
+                await supabase.auth.signOut(); 
                 return;
             }
 
@@ -276,6 +283,7 @@
              authStatus.textContent = `Login Error: ${loginError.message}`;
         }
     }
+
 
     // Logout Function
     async function logout() {
@@ -299,7 +307,7 @@
 
         document.getElementById("leaderboardList").innerHTML = '<li>Loading...</li>';
         supabase.removeAllChannels(); 
-        fetchLeaderboard(); // Load the static leaderboard if not logged in
+        fetchLeaderboard(); 
     }
 
     // Save Diamonds to Supabase (Secured by RLS UPDATE policy)
@@ -352,7 +360,8 @@
                 table: PLAYER_TABLE 
             }, fetchLeaderboard)
             .subscribe();
-
+        
+        // Initial fetch is handled here to ensure it runs
         fetchLeaderboard(); 
     }
 
@@ -461,4 +470,3 @@
 
 </body>
 </html>
-
