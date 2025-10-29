@@ -3,470 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Slots</title>
+    <title>Diamond Slots Admin Panel (Advanced)</title>
     <style>
-        /* CSS styles remain the same for visual appearance */
         body {
-            margin: 0;
-            background: radial-gradient(circle at center, #0b001f 0%, #000 100%);
-            font-family: 'Orbitron', sans-serif;
-            color: white;
-            text-align: center;
-            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            color: #333;
         }
-
         h1 {
-            font-size: 2.5em;
-            color: #8f4aff;
-            text-shadow: 0 0 20px #8f4aff;
+            color: #4a4a8f;
         }
-
-        #diamondDisplay {
-            font-size: 1.5em;
-            margin: 10px;
-            color: #00eaff;
-            text-shadow: 0 0 10px #00eaff;
-        }
-
-        .slot {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            margin: 10px;
-            background: black;
-            border: 3px solid #8f4aff;
-            border-radius: 15px;
-            box-shadow: 0 0 15px #8f4aff;
-            font-size: 2em;
-            line-height: 100px;
-            color: #00eaff;
-            text-shadow: 0 0 15px #00eaff;
-        }
-
-        #spinBtn {
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #8f4aff, #00eaff);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 0 20px #8f4aff;
-            transition: 0.3s;
-        }
-
-        #spinBtn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 40px #00eaff;
-        }
-
-        .powerups button {
-            margin: 10px;
-            padding: 10px 20px;
-            border: none;
+        #loginBox, #adminPanel {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
             cursor: pointer;
-            background: #1e0037;
+            background-color: #4a4a8f;
             color: white;
-            text-shadow: 0 0 10px #00eaff;
-            box-shadow: 0 0 10px #8f4aff;
-            transition: 0.3s;
+            border: none;
         }
-
-        .powerups button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px #00eaff;
+        button:hover {
+            background-color: #3a3a7f;
         }
-
-        #leaderboard {
-            margin-top: 30px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 15px;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 0 15px #8f4aff;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        
-        #leaderboardList li {
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            padding: 5px 0;
-            list-style-type: none; 
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
         }
-
-        #leaderboardList li:last-child {
-             border-bottom: none;
-        }
-
-        .jackpot {
-            font-size: 3em;
-            color: gold;
-            animation: jackpotAnim 1s infinite alternate;
-            text-shadow: 0 0 25px gold, 0 0 50px orange;
-        }
-
-        @keyframes jackpotAnim {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0.8; }
+        th {
+            background-color: #e9e9e9;
         }
     </style>
 </head>
 <body>
-    <h1>💎 Diamond Slots 💎</h1>
+    <h1>💎 Advanced Admin Control Panel</h1>
 
-    <div id="loginBox" style="margin-bottom: 20px;">
-        <input id="loginUsername" placeholder="Username">
-        <input id="loginPassword" placeholder="Password" type="password">
-        <button onclick="handleAuth()">Login / Register</button>
-        <button id="logoutBtn" onclick="logout()" style="display:none; background-color:#d9534f;">Logout</button>
-        <p id="authStatus"></p>
-    </div>
-
-    <div id="gameArea" style="display:none;">
-        <div id="diamondDisplay"></div>
-
-        <div id="slots">
-            <div class="slot" id="slot1">❔</div>
-            <div class="slot" id="slot2">❔</div>
-            <div class="slot" id="slot3">❔</div>
+    <div id="loginBox">
+        <h2>Admin Login (Supabase Auth)</h2>
+        <input type="text" id="adminUser" placeholder="Admin Username">
+        <input type="password" id="adminPass" placeholder="Password">
+        <button onclick="loginAdmin()">Login Securely</button>
         </div>
 
-        <br>
-        <button id="spinBtn">🎰 SPIN</button>
-
-        <div class="powerups">
-            <button id="luckBtn">💫 2× Luck (1000💎)</button>
-            <button id="rewardBtn">💎 2× Reward (2000💎)</button>
-            <button id="freeSpinBtn">🎟 Free Spin (1500💎)</button>
-        </div>
-
-        <h2 id="result"></h2>
+    <div id="adminPanel" style="display:none;">
+        <h2>Player Management</h2>
+        <button onclick="resetDiamonds()" style="background-color: #d9534f;">⚠️ Reset ALL Diamonds to 0</button>
+        <button onclick="loadPlayers()" style="background-color: #5bc0de;">🔄 Refresh Player List</button>
+        <div id="playerTable">
+            </div>
     </div>
 
-    <div id="leaderboard">
-        <h3>🏆 Live Leaderboard</h3>
-        <ul id="leaderboardList">
-            <li>Loading...</li>
-        </div>
-    </div>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <script>
+        // 🔑 1. CONFIGURATION (AUTOFILLED WITH YOUR KEYS)
+        const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; 
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y";
 
-    <audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-slot-machine-loop-2067.mp3"></audio>
-    <audio id="jackpotSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+        // 🔗 EDGE FUNCTION URLs (⚠️ REPLACE THESE WITH YOUR DEPLOYED URLs)
+        const RESET_FUNCTION_URL = "https://your-project-ref.supabase.co/functions/v1/admin-reset"; // <<< REPLACE THIS!
+        const GIVE_DIAMONDS_FUNCTION_URL = "https://your-project-ref.supabase.co/functions/v1/admin-give-diamonds"; // <<< REPLACE THIS!
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // ⚠️ 1. Supabase Connection (Update these with your actual project keys)
-    const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; // REPLACE THIS
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y"; // REPLACE THIS
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // 🔹 2. Game State Variables
-    let currentUserId = null;
-    let currentUsername = null;
-    let diamonds = 0;
-    let luckMultiplier = 1;
-    let rewardMultiplier = 1;
-    let freeSpin = false;
-    const STARTING_DIAMONDS = 1000;
-    
-    // Game constants
-    const symbols = ["💎", "🍒", "🍋", "🔔", "7️⃣", "⭐", "🔥"];
-    const diamondDisplay = document.getElementById("diamondDisplay");
-    const resultDisplay = document.getElementById("result");
-    const spinSound = document.getElementById("spinSound");
-    const jackpotSound = document.getElementById("jackpotSound");
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const gameArea = document.getElementById("gameArea");
-    const authStatus = document.getElementById("authStatus");
-    const PLAYER_TABLE = "players"; 
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const PLAYER_TABLE = "players"; 
 
-    // --- 3. CORE FUNCTIONS ---
+        // --- 2. ADVANCED AUTHENTICATION (Uses Supabase Auth and RBAC Check) ---
+        async function loginAdmin() {
+            const username = document.getElementById("adminUser").value;
+            const password = document.getElementById("adminPass").value;
 
-    // Load user profile and set up the game UI
-    async function loadUserProfile(userId) {
-        currentUserId = userId;
+            if (!username || !password) return alert("Enter both username and password.");
 
-        const { data: profile, error } = await supabase
-            .from(PLAYER_TABLE)
-            .select("username, diamonds")
-            .eq("id", userId)
-            .single();
+            let authStatus = document.getElementById("loginBox").querySelector('#statusMessage');
+            if (!authStatus) {
+                authStatus = document.createElement('p');
+                authStatus.id = 'statusMessage';
+                document.getElementById("loginBox").appendChild(authStatus);
+            }
+            authStatus.textContent = "Attempting secure login...";
 
-        if (error) {
-            console.error("Error fetching profile:", error);
-            authStatus.textContent = "Error loading profile data.";
-            return;
-        }
+            // --- USERNAME CLEANUP FOR EMAIL ---
+            const safeUsername = username.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9.-]/g, '-') 
+                .replace(/^-+|-+$/g, '') 
+                .replace(/\.{2,}/g, '.');
 
-        currentUsername = profile.username;
-        diamonds = profile.diamonds;
-        
-        loginBox.style.display = 'block';
-        gameArea.style.display = 'block';
-        
-        loginBox.querySelector('input:nth-child(1)').style.display = 'none';
-        loginBox.querySelector('input:nth-child(2)').style.display = 'none';
-        loginBox.querySelector('button:nth-child(3)').style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
+            // Using the new .co domain for better validator compatibility
+            const email = `${safeUsername}@gamemail.co`; 
+            // ------------------------------------
 
-        authStatus.textContent = `Welcome, ${currentUsername}!`;
-        updateDisplay();
-        
-        setupRealtimeLeaderboard();
-    }
-
-    // Secure Login / Signup Function (FINAL FIXED VERSION)
-    async function handleAuth() {
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
-
-        if (!username || !password) {
-            authStatus.textContent = "Please enter both username and password.";
-            return;
-        }
-        
-        // --- FINAL ROBUST FIX FOR EMAIL VALIDATION ERROR ---
-        const safeUsername = username.toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9.-]/g, '-') // 1. Convert illegal characters (spaces, etc.) to hyphens
-            .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens (Crucial fix)
-            .replace(/\.{2,}/g, '.');   // 3. Prevent double dots
-
-        const email = `${safeUsername}@game.local`;
-        // ----------------------------------------------------
-
-        authStatus.textContent = "Processing credentials...";
-
-        // A. Attempt Login
-        let { data: sessionData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (sessionData?.user) {
-             // Successful Login
-             await loadUserProfile(sessionData.user.id);
-             return;
-        } 
-        
-        // B. Attempt Signup (if login failed with invalid credentials)
-        if (loginError && loginError.message === 'Invalid login credentials') {
-            authStatus.textContent = "Attempting registration...";
-            
-            let { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            // 1. Authenticate the user
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password,
-                options: { data: { username: username } }
             });
 
-            if (signUpError) {
-                 authStatus.textContent = `Registration failed: ${signUpError.message}`;
-                 console.error("Signup Error:", signUpError);
-                 return;
-            }
-
-            // After successful signup, insert the profile row (RLS INSERT policy allows this)
-            const { error: insertError } = await supabase.from(PLAYER_TABLE).insert([{ id: signUpData.user.id, username: username, diamonds: STARTING_DIAMONDS }]);
-                
-            if (insertError) {
-                authStatus.textContent = `Registration Error: New row violates row-level security policy for table "players". Did you use unique credentials?`;
-                await supabase.auth.signOut(); 
+            if (error) {
+                authStatus.textContent = "❌ Login failed: " + error.message;
                 return;
             }
 
-            await loadUserProfile(signUpData.user.id);
+            // 2. CHECK FOR ADMIN ROLE (RBAC) via the custom claim in the JWT
+            // Note: The user MUST have 'is_admin: true' set in their user_metadata.
+            const isAdmin = data.session.user.app_metadata.is_admin === true;
 
-        } else if (loginError) {
-             authStatus.textContent = `Login Error: ${loginError.message}`;
-        }
-    }
-
-
-    // Logout Function
-    async function logout() {
-        await supabase.auth.signOut();
-        resetUI();
-    }
-
-    // Reset UI to logged-out state
-    function resetUI() {
-        currentUserId = null;
-        currentUsername = null;
-        diamonds = 0;
-        
-        gameArea.style.display = 'none';
-        authStatus.textContent = "Please log in or register to play.";
-        
-        loginBox.querySelector('input:nth-child(1)').style.display = 'inline-block';
-        loginBox.querySelector('input:nth-child(2)').style.display = 'inline-block';
-        loginBox.querySelector('button:nth-child(3)').style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-
-        document.getElementById("leaderboardList").innerHTML = '<li>Loading...</li>';
-        supabase.removeAllChannels(); 
-        fetchLeaderboard(); 
-    }
-
-    // Save Diamonds to Supabase (Secured by RLS UPDATE policy)
-    async function saveDiamonds() {
-        if (!currentUserId) return;
-        
-        const { error } = await supabase
-            .from(PLAYER_TABLE)
-            .update({ diamonds })
-            .eq("id", currentUserId);
-
-        if (error) {
-            console.error("Error saving diamonds:", error);
-            authStatus.textContent = `Error saving data: ${error.message}`;
-        }
-    }
-
-    // Update UI Display
-    function updateDisplay() {
-        diamondDisplay.textContent = `👤 ${currentUsername} | 💎 Diamonds: ${diamonds} | Luck: ${luckMultiplier}x | Reward: ${rewardMultiplier}x`;
-    }
-
-    // Fetch and display the Leaderboard
-    async function fetchLeaderboard() {
-        const { data, error } = await supabase
-            .from(PLAYER_TABLE)
-            .select("username, diamonds")
-            .order("diamonds", { ascending: false })
-            .limit(10);
-
-        if (error) {
-            console.error("Error fetching leaderboard:", error);
-            document.getElementById("leaderboardList").innerHTML = `<li>Error loading leaderboard.</li>`;
-            return;
-        }
-
-        const leaderboardList = document.getElementById("leaderboardList");
-        leaderboardList.innerHTML = data.map((p, i) => 
-            `<li>${i + 1}. **${p.username}** — 💎 ${p.diamonds}</li>`
-        ).join('');
-    }
-
-    // --- 4. REALTIME LEADERBOARD ---
-    function setupRealtimeLeaderboard() {
-        supabase
-            .channel('leaderboard-changes')
-            .on('postgres_changes', { 
-                event: 'UPDATE', 
-                schema: 'public', 
-                table: PLAYER_TABLE 
-            }, fetchLeaderboard)
-            .subscribe();
-        
-        // Initial fetch is handled here to ensure it runs
-        fetchLeaderboard(); 
-    }
-
-    // --- 5. GAME LOGIC ---
-    function spin() {
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds < 50 && !freeSpin) {
-            resultDisplay.textContent = "❌ Out of diamonds! Spin costs 50 💎.";
-            return;
-        }
-
-        if (!freeSpin) {
-            diamonds -= 50; 
-        }
-        freeSpin = false;
-
-        spinSound.currentTime = 0;
-        spinSound.play();
-
-        const s1 = symbols[Math.floor(Math.random() * symbols.length)];
-        const s2 = symbols[Math.floor(Math.random() * symbols.length)];
-        const s3 = symbols[Math.floor(Math.random() * symbols.length)];
-
-        document.getElementById("slot1").textContent = s1;
-        document.getElementById("slot2").textContent = s2;
-        document.getElementById("slot3").textContent = s3;
-
-        if (s1 === s2 && s2 === s3) {
-            let reward = 500 * rewardMultiplier;
-            
-            if (Math.random() < 0.1 * luckMultiplier) {
-                reward *= 5;
-                jackpotSound.currentTime = 0;
-                jackpotSound.play();
-                resultDisplay.innerHTML = `<span class='jackpot'>🎉 JACKPOT! +${reward} 💎</span>`;
+            if (isAdmin) {
+                authStatus.textContent = `✅ Welcome Admin: ${username}!`;
+                document.getElementById("loginBox").style.display = "none";
+                document.getElementById("adminPanel").style.display = "block";
+                loadPlayers();
             } else {
-                resultDisplay.textContent = `🎉 You won +${reward} 💎!`;
+                // Sign out the non-admin user immediately for security
+                await supabase.auth.signOut();
+                authStatus.textContent = "🔒 Access Denied: You are not an authorized administrator.";
             }
-            diamonds += reward;
-        } else {
-            resultDisplay.textContent = "😢 Try again!";
         }
 
-        updateDisplay();
-        saveDiamonds(); 
-    }
+        // --- 3. LOAD PLAYERS (SELECT is allowed by RLS) ---
+        async function loadPlayers() {
+            const { data, error } = await supabase
+                .from(PLAYER_TABLE)
+                .select("id, username, diamonds, is_admin") 
+                .order("diamonds", { ascending: false });
 
-    // --- 6. POWER-UP FUNCTIONS (Simplified to only call updateDisplay/saveDiamonds) ---
-    document.getElementById("spinBtn").onclick = spin;
+            if (error) {
+                alert("Error loading players: " + error.message + ". Check your RLS SELECT policy (should be TRUE).");
+                return;
+            }
 
-    document.getElementById("luckBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 1000) { 
-            diamonds -= 1000; 
-            luckMultiplier = 2; 
-            setTimeout(() => { luckMultiplier = 1; resultDisplay.textContent = "💫 Luck boost ended."; updateDisplay(); }, 15000); 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "💫 Luck boost active!"; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (1000) for Luck Boost!";
+            let html = `<table>
+                <tr><th>Username</th><th>Diamonds</th><th>Admin</th><th>Action</th></tr>`;
+
+            data.forEach(player => {
+                const adminStatus = player.is_admin ? '✅' : '❌';
+                const toggleAction = player.is_admin ? 'Revoke Admin' : 'Grant Admin';
+                const toggleColor = player.is_admin ? '#f0ad4e' : '#5cb85c';
+
+                html += `<tr>
+                    <td>${player.username}</td>
+                    <td>${player.diamonds}</td>
+                    <td>${adminStatus}</td>
+                    <td>
+                        <input type="number" id="add-${player.id}" placeholder="Add amount" style="width:80px;">
+                        <button onclick="giveDiamonds('${player.id}')">💎 Give</button>
+                        <button onclick="toggleAdmin('${player.id}', ${!player.is_admin})" style="background-color:${toggleColor};">${toggleAction}</button>
+                    </td>
+                </tr>`;
+            });
+
+            html += "</table>";
+            document.getElementById("playerTable").innerHTML = html;
         }
-    };
 
-    document.getElementById("rewardBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 2000) { 
-            diamonds -= 2000; 
-            rewardMultiplier = 2; 
-            setTimeout(() => { rewardMultiplier = 1; resultDisplay.textContent = "💎 Double rewards ended."; updateDisplay(); }, 15000); 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "💎 Double rewards active!"; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (2000) for Double Rewards!";
+        // --- 4. SECURE FUNCTION: Toggle Admin Status ---
+        async function toggleAdmin(playerId, becomeAdmin) {
+            if (!confirm(`Are you sure you want to ${becomeAdmin ? 'GRANT' : 'REVOKE'} admin status for this user?`)) return;
+
+            // This update is possible because the Admin is logged in and the RLS policy for UPDATE 
+            // should allow admins (or all authenticated users) to update the 'is_admin' column.
+            try {
+                const { error } = await supabase
+                    .from(PLAYER_TABLE)
+                    .update({ is_admin: becomeAdmin })
+                    .eq('id', playerId);
+
+                if (error) {
+                    alert("❌ Failed to change role: " + error.message + ". Check your RLS UPDATE policy!");
+                } else {
+                    alert(`✅ Admin status ${becomeAdmin ? 'GRANTED' : 'REVOKED'}. The user must log out and back in to refresh their permissions.`);
+                    loadPlayers();
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
-    };
 
-    document.getElementById("freeSpinBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 1500) { 
-            diamonds -= 1500; 
-            freeSpin = true; 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "🎟 Free spin ready! Spin now."; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (1500) for a Free Spin!";
+
+        // --- 5. SECURE FUNCTION CALL: GIVE DIAMONDS (Calls the Edge Function) ---
+        async function giveDiamonds(playerId) {
+            const input = document.getElementById(`add-${playerId}`);
+            const addAmount = parseInt(input.value);
+            
+            if (isNaN(addAmount) || addAmount === 0) return alert("Enter a valid non-zero amount!");
+            
+            try {
+                // The JWT is automatically included in the Authorization header
+                const response = await fetch(GIVE_DIAMONDS_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabase.auth.getSession().data.session.access_token}` // Send the admin's token
+                    },
+                    body: JSON.stringify({
+                        player_id: playerId, 
+                        amount_to_add: addAmount
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert(`✅ ${addAmount} Diamonds added!`);
+                    input.value = ''; 
+                    loadPlayers(); 
+                } else {
+                    alert("❌ Error giving diamonds: " + (result.error || "Unknown error"));
+                }
+            } catch (e) {
+                alert("❌ Network Error: Could not connect to the function. Check the URL and deployment.");
+                console.error("Fetch Error:", e);
+            }
         }
-    };
-    
-    // --- 7. INITIALIZATION (Check for existing session) ---
-    async function initialize() {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-            await loadUserProfile(session.user.id);
-        } else {
-            resetUI();
-            setupRealtimeLeaderboard(); 
+
+        // --- 6. SECURE FUNCTION CALL: RESET DIAMONDS (Calls the Edge Function) ---
+        async function resetDiamonds() {
+            if (!confirm("⚠️ Are you sure you want to reset ALL players' diamonds to 0? This cannot be undone.")) return;
+
+            try {
+                const response = await fetch(RESET_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabase.auth.getSession().data.session.access_token}` // Send the admin's token
+                    },
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert("✅ All player diamonds reset to 0!");
+                    loadPlayers();
+                } else {
+                    alert("❌ Error resetting: " + (result.error || "Unknown error"));
+                }
+            } catch (e) {
+                alert("❌ Network Error: Could not connect to the reset function. Check the URL and deployment.");
+                console.error("Fetch Error:", e);
+            }
         }
-    }
-
-    initialize();
-</script>
-
+    </script>
 </body>
 </html>
