@@ -293,6 +293,7 @@
                     }
                     
                     user = newUser;
+                    // NOTE: If 'Confirm email' is ON in Supabase, the user MUST check their email before proceeding.
                     authMessage.textContent = 'Registration successful! Please check your email to confirm registration.';
                 } else {
                     authMessage.textContent = `Login failed: ${error.message}`;
@@ -360,7 +361,7 @@
         async function loadUserData() {
             const user = (await supabase.auth.getUser()).data.user;
             if (!user) {
-                updateGameUI(); // Ensure UI is reset even if no session
+                updateGameUI(); 
                 return;
             }
 
@@ -371,8 +372,7 @@
                 .single();
 
             if (error) {
-                console.error('Error fetching profile:', error);
-                // Even on error, attempt to update UI based on limited data
+                console.error('Error fetching profile (Check RLS for SELECT on own profile!):', error);
                 updateGameUI(); 
                 return;
             }
@@ -385,7 +385,7 @@
             
             // Update the UI
             updateGameUI();
-            checkDailyBonusStatus(profile.last_daily_claim); // Pass the last_daily_claim directly
+            checkDailyBonusStatus(profile.last_daily_claim); 
         }
 
         function updateGameUI() {
@@ -416,7 +416,7 @@
 
 
         // =================================================================
-        //                         SLOTS GAME LOGIC
+        //                   SLOTS GAME LOGIC (OPTIMISTIC UI)
         // =================================================================
 
         function getRandomSymbol() {
@@ -442,43 +442,51 @@
                 return;
             }
 
+            const initialDiamonds = currentDiamonds; // Store for rollback
+            document.getElementById('startGameButton').disabled = true;
+
+            // 1. DEDUCT COST AND SPIN IMMEDIATELY (Optimistic Update)
             currentDiamonds -= COST_PER_SPIN;
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('resultMessage').textContent = 'Spinning...';
             document.getElementById('slotDisplay').textContent = '✨ ✨ ✨';
-            document.getElementById('startGameButton').disabled = true;
 
-            // OPTIMIZATION: Reduced delay for faster spin feeling
+            // 2. Perform Spin Animation (Already fast at 300ms)
             await new Promise(resolve => setTimeout(resolve, 300)); 
 
             const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
             const winnings = calculateWinnings(results);
-            currentDiamonds += winnings;
+            currentDiamonds += winnings; // Update final diamond count locally
 
+            // 3. Update UI to Final Result Immediately
             document.getElementById('slotDisplay').textContent = results.join(' ');
             if (winnings > 0) {
                 document.getElementById('resultMessage').textContent = `WINNER! You won ${winnings.toLocaleString()} diamonds!`;
             } else {
                 document.getElementById('resultMessage').textContent = 'Better luck next time!';
             }
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString(); // Show final score
 
+            // 4. Send Database Update (Happens in background)
             const { error } = await supabase
                 .from('players')
                 .update({ diamonds: currentDiamonds })
                 .eq('id', currentUserID);
 
+            // 5. Check for Network Error (Rollback if fails)
             if (error) {
-                console.error('Database update failed:', error);
-                document.getElementById('resultMessage').textContent = `Error: Diamond update failed. ${error.message}`;
+                console.error('Database update failed, rolling back:', error);
+                currentDiamonds = initialDiamonds; // Rollback diamonds
+                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+                document.getElementById('resultMessage').textContent = `ERROR: Network failed. Please try again. Diamonds rolled back.`;
             }
             
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('startGameButton').disabled = false;
         }
 
 
         // =================================================================
-        //                         ROULETTE GAME LOGIC
+        //                    ROULETTE GAME LOGIC (OPTIMISTIC UI)
         // =================================================================
         
         async function startRoulette(playerGuess) {
@@ -487,30 +495,28 @@
                 return;
             }
             
-            // Disable all buttons during spin
             const buttons = document.querySelectorAll('#rouletteMode button');
             buttons.forEach(btn => btn.disabled = true);
-            
             const rouletteDisplay = document.getElementById('rouletteDisplay');
-            
-            // Clear previous result style
             rouletteDisplay.className = 'game-display';
             
-            // 1. Deduct cost locally
+            const initialDiamonds = currentDiamonds; // Store for rollback
+
+            // 1. Deduct cost locally (Optimistic Update)
             currentDiamonds -= ROULETTE_COST;
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
             rouletteDisplay.textContent = 'SPINNING...';
             
-            // OPTIMIZATION: Reduced delay for faster spin feeling
+            // 2. Perform Spin Animation (Already fast at 500ms)
             await new Promise(resolve => setTimeout(resolve, 500)); 
             
-            // 2. Determine result
+            // 3. Determine result
             const winningColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
             let winnings = 0;
             let resultMessage = '';
 
-            // 3. Apply the angled/colored visual style
+            // 4. Calculate Winnings and Update Local Score
             rouletteDisplay.className = `game-display roulette-result-${winningColor.toLowerCase()}`;
 
             if (playerGuess === winningColor) {
@@ -522,23 +528,26 @@
                 resultMessage = `❌ LOSS! The wheel landed on ${winningColor}. Better luck next time.`;
             }
 
-            // 4. Update UI
+            // 5. Update UI to Final Result Immediately
             rouletteDisplay.textContent = winningColor;
             document.getElementById('rouletteResultMessage').textContent = resultMessage;
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
 
-            // 5. Update database
+            // 6. Send Database Update (Happens in background)
             const { error } = await supabase
                 .from('players')
                 .update({ diamonds: currentDiamonds })
                 .eq('id', currentUserID);
 
+            // 7. Check for Network Error (Rollback if fails)
             if (error) {
-                console.error('Roulette Database update failed:', error);
-                document.getElementById('rouletteResultMessage').textContent = `Error: Diamond update failed. ${error.message}`;
+                console.error('Roulette Database update failed, rolling back:', error);
+                currentDiamonds = initialDiamonds; // Rollback diamonds
+                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+                document.getElementById('rouletteResultMessage').textContent = `ERROR: Network failed. Diamonds rolled back.`;
             }
             
-            // 6. Re-enable buttons and update final count
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            // 8. Re-enable buttons
             buttons.forEach(btn => btn.disabled = false);
         }
 
@@ -567,7 +576,8 @@
                 adminMessage.textContent = `Error: ${error.message}`;
                 console.error('Admin Update Error:', error);
             } else if (error && error.code === '42501') {
-                adminMessage.textContent = 'Permission Denied. (Check RLS or admin status)';
+                // RLS 42501 permission denied is common when not an admin
+                adminMessage.textContent = 'Permission Denied. (Check RLS or admin status)'; 
             } else {
                 adminMessage.textContent = `Successfully set User ${targetUserId} diamonds to ${newAmount.toLocaleString()}`;
                 if (targetUserId === currentUserID) {
@@ -583,7 +593,6 @@
         // =================================================================
 
         function isDailyBonusReady(lastClaimTimestamp) {
-            // FIX: Handle null, undefined, or empty string (which can be the error cause)
             if (!lastClaimTimestamp || lastClaimTimestamp === 'null') return true; 
 
             try {
@@ -595,7 +604,6 @@
                 return timeDifferenceMs >= cooldownMs;
             } catch (e) {
                 console.error("Error parsing timestamp:", e, lastClaimTimestamp);
-                // If parsing fails due to invalid format, assume ready to avoid locking the user
                 return true; 
             }
         }
@@ -611,7 +619,6 @@
                 return;
             }
             
-            // Use the data passed directly from loadUserData to avoid an extra DB fetch
             const lastClaim = lastDailyClaimFromProfile;
 
             if (isDailyBonusReady(lastClaim)) {
@@ -631,28 +638,39 @@
         async function claimDailyBonus() {
             if (!currentUserID) return; 
 
+            const initialDiamonds = currentDiamonds; // Store for rollback
+            const newClaimTime = new Date().toISOString();
+            
+            // Optimistic Update: Assume success and update UI immediately
+            currentDiamonds += DAILY_BONUS_AMOUNT;
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
+            document.getElementById('dailyBonusButton').disabled = true; // Disable until next status check
+
+            // Send database update in background
             const { data: updatedData, error: updateError } = await supabase
                 .from('players')
                 .update({ 
-                    diamonds: currentDiamonds + DAILY_BONUS_AMOUNT,
-                    last_daily_claim: new Date().toISOString()
+                    diamonds: currentDiamonds,
+                    last_daily_claim: newClaimTime
                 })
                 .eq('id', currentUserID)
                 .select('last_daily_claim')
                 .single();
                 
+            // Check for Network Error (Rollback if fails)
             if (updateError) {
-                document.getElementById('dailyBonusMessage').textContent = 'Failed to claim bonus. Try again.';
+                currentDiamonds = initialDiamonds; // Rollback diamonds
+                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+                document.getElementById('dailyBonusMessage').textContent = 'ERROR: Failed to claim bonus. Diamonds rolled back.';
                 console.error(updateError);
+                // Re-enable button after error
+                document.getElementById('dailyBonusButton').disabled = false;
                 return;
             }
 
-            currentDiamonds += DAILY_BONUS_AMOUNT;
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-            document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
-            
-            // Pass the newly updated timestamp back to the status checker
-            checkDailyBonusStatus(updatedData.last_daily_claim);
+            // If successful, update status
+            checkDailyBonusStatus(newClaimTime);
         }
 
         // =================================================================
