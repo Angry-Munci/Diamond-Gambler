@@ -359,7 +359,10 @@
 
         async function loadUserData() {
             const user = (await supabase.auth.getUser()).data.user;
-            if (!user) return;
+            if (!user) {
+                updateGameUI(); // Ensure UI is reset even if no session
+                return;
+            }
 
             const { data: profile, error } = await supabase
                 .from('players')
@@ -369,6 +372,8 @@
 
             if (error) {
                 console.error('Error fetching profile:', error);
+                // Even on error, attempt to update UI based on limited data
+                updateGameUI(); 
                 return;
             }
 
@@ -380,7 +385,7 @@
             
             // Update the UI
             updateGameUI();
-            checkDailyBonusStatus();
+            checkDailyBonusStatus(profile.last_daily_claim); // Pass the last_daily_claim directly
         }
 
         function updateGameUI() {
@@ -388,9 +393,12 @@
             document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
 
             document.getElementById('adminPanelContainer').style.display = isUserAdmin ? 'block' : 'none';
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('logoutButton').style.display = 'block';
-            document.getElementById('gameAreaContainer').style.display = 'block';
+            
+            // Handle display based on login status
+            const isLoggedIn = currentUserID !== null;
+            document.getElementById('authContainer').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('logoutButton').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('gameAreaContainer').style.display = isLoggedIn ? 'block' : 'none';
             document.getElementById('authMessage').textContent = '';
         }
 
@@ -440,7 +448,8 @@
             document.getElementById('slotDisplay').textContent = '✨ ✨ ✨';
             document.getElementById('startGameButton').disabled = true;
 
-            await new Promise(resolve => setTimeout(resolve, 1000)); 
+            // OPTIMIZATION: Reduced delay for faster spin feeling
+            await new Promise(resolve => setTimeout(resolve, 300)); 
 
             const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
             const winnings = calculateWinnings(results);
@@ -493,7 +502,8 @@
             document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
             rouletteDisplay.textContent = 'SPINNING...';
             
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
+            // OPTIMIZATION: Reduced delay for faster spin feeling
+            await new Promise(resolve => setTimeout(resolve, 500)); 
             
             // 2. Determine result
             const winningColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
@@ -573,17 +583,24 @@
         // =================================================================
 
         function isDailyBonusReady(lastClaimTimestamp) {
-            if (!lastClaimTimestamp) return true; 
+            // FIX: Handle null, undefined, or empty string (which can be the error cause)
+            if (!lastClaimTimestamp || lastClaimTimestamp === 'null') return true; 
 
-            const lastClaim = new Date(lastClaimTimestamp);
-            const now = new Date();
-            const timeDifferenceMs = now - lastClaim;
-            const cooldownMs = COOLDOWN_HOURS * 60 * 60 * 1000;
-
-            return timeDifferenceMs >= cooldownMs;
+            try {
+                const lastClaim = new Date(lastClaimTimestamp);
+                const now = new Date();
+                const timeDifferenceMs = now - lastClaim;
+                const cooldownMs = COOLDOWN_HOURS * 60 * 60 * 1000;
+                
+                return timeDifferenceMs >= cooldownMs;
+            } catch (e) {
+                console.error("Error parsing timestamp:", e, lastClaimTimestamp);
+                // If parsing fails due to invalid format, assume ready to avoid locking the user
+                return true; 
+            }
         }
 
-        async function checkDailyBonusStatus() {
+        async function checkDailyBonusStatus(lastDailyClaimFromProfile) {
             const bonusButton = document.getElementById('dailyBonusButton');
             const bonusMessage = document.getElementById('dailyBonusMessage');
             bonusMessage.textContent = ''; 
@@ -593,24 +610,15 @@
                 bonusButton.disabled = true;
                 return;
             }
+            
+            // Use the data passed directly from loadUserData to avoid an extra DB fetch
+            const lastClaim = lastDailyClaimFromProfile;
 
-            const { data: profile, error } = await supabase
-                .from('players')
-                .select('last_daily_claim')
-                .eq('id', currentUserID)
-                .single();
-                
-            if (error || !profile) {
-                bonusButton.textContent = 'Daily Bonus (Error)';
-                bonusButton.disabled = true;
-                return;
-            }
-
-            if (isDailyBonusReady(profile.last_daily_claim)) {
+            if (isDailyBonusReady(lastClaim)) {
                 bonusButton.textContent = `Daily Bonus READY! (+${DAILY_BONUS_AMOUNT}💎)`;
                 bonusButton.disabled = false;
             } else {
-                const lastClaimTime = new Date(profile.last_daily_claim).getTime();
+                const lastClaimTime = new Date(lastClaim).getTime();
                 const nowTime = new Date().getTime();
                 const remainingMs = (COOLDOWN_HOURS * 60 * 60 * 1000) - (nowTime - lastClaimTime);
                 const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
@@ -623,13 +631,15 @@
         async function claimDailyBonus() {
             if (!currentUserID) return; 
 
-            const { error: updateError } = await supabase
+            const { data: updatedData, error: updateError } = await supabase
                 .from('players')
                 .update({ 
                     diamonds: currentDiamonds + DAILY_BONUS_AMOUNT,
                     last_daily_claim: new Date().toISOString()
                 })
-                .eq('id', currentUserID);
+                .eq('id', currentUserID)
+                .select('last_daily_claim')
+                .single();
                 
             if (updateError) {
                 document.getElementById('dailyBonusMessage').textContent = 'Failed to claim bonus. Try again.';
@@ -641,7 +651,8 @@
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
             
-            checkDailyBonusStatus();
+            // Pass the newly updated timestamp back to the status checker
+            checkDailyBonusStatus(updatedData.last_daily_claim);
         }
 
         // =================================================================
