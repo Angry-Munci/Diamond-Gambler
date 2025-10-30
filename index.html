@@ -69,6 +69,23 @@
             color: #00ffff;
             font-weight: bold;
         }
+        /* --- ROULETTE VISUAL STYLES (Angled/Colored) --- */
+        .roulette-result-red {
+            background: linear-gradient(45deg, #ff0000, #990000); /* Angled Gradient */
+            color: white;
+            border: 3px solid #ffaa00;
+        }
+        .roulette-result-black {
+            background: linear-gradient(45deg, #333333, #000000); /* Angled Gradient */
+            color: white;
+            border: 3px solid #666666;
+        }
+        .roulette-result-green {
+            background: linear-gradient(45deg, #33ff33, #009900); /* Angled Gradient */
+            color: #000;
+            border: 3px solid #00ffff;
+        }
+        /* ----------------------------------------------- */
         .modal {
             display: none;
             position: fixed;
@@ -166,7 +183,7 @@
             <div style="margin-bottom: 10px;">
                 <button onclick="startRoulette('Red')" style="background-color: #ff3333;">Bet Red (2x)</button>
                 <button onclick="startRoulette('Black')" style="background-color: #333333;">Bet Black (2x)</button>
-                <button onclick="startRoulette('Green')" style="background-color: #33ff33;">Bet Green (14x)</button>
+                <button onclick="startRoulette('Green')" style="background-color: #33ff33; color: black;">Bet Green (14x)</button>
             </div>
             <div class="game-display" id="rouletteDisplay">Spin the Wheel!</div>
             <p id="rouletteResultMessage" class="message-box">Pick your color to place a bet!</p>
@@ -206,9 +223,9 @@
         //                 SUPABASE CLIENT CONFIGURATION
         // =================================================================
 
-        // ⚠️ REPLACE THESE WITH YOUR ACTUAL SUPABASE PROJECT CREDENTIALS ⚠️
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        // 🥳 YOUR ACTUAL SUPABASE PROJECT CREDENTIALS 🥳
+        const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y';
         
         // Initialize the client
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -235,7 +252,7 @@
         };
 
         // Roulette configuration
-        const ROULETTE_COST = 500; // Cost per roulette spin
+        const ROULETTE_COST = 500; 
         const ROULETTE_WHEEL = ['Red', 'Red', 'Black', 'Black', 'Green']; // Weighted wheel
         const ROULETTE_PAYOUTS = {
             'Red': 2,    // 2x payout
@@ -385,7 +402,6 @@
             document.getElementById('slotsMode').style.display = mode === 'slots' ? 'block' : 'none';
             document.getElementById('rouletteMode').style.display = mode === 'roulette' ? 'block' : 'none';
             
-            // Reset messages when switching modes
             document.getElementById('resultMessage').textContent = 'Click Start Slot Spin!';
             document.getElementById('rouletteResultMessage').textContent = 'Pick your color to place a bet!';
         }
@@ -466,11 +482,16 @@
             const buttons = document.querySelectorAll('#rouletteMode button');
             buttons.forEach(btn => btn.disabled = true);
             
+            const rouletteDisplay = document.getElementById('rouletteDisplay');
+            
+            // Clear previous result style
+            rouletteDisplay.className = 'game-display';
+            
             // 1. Deduct cost locally
             currentDiamonds -= ROULETTE_COST;
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
-            document.getElementById('rouletteDisplay').textContent = 'Spinning...';
+            rouletteDisplay.textContent = 'SPINNING...';
             
             await new Promise(resolve => setTimeout(resolve, 1500)); 
             
@@ -478,6 +499,9 @@
             const winningColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
             let winnings = 0;
             let resultMessage = '';
+
+            // 3. Apply the angled/colored visual style
+            rouletteDisplay.className = `game-display roulette-result-${winningColor.toLowerCase()}`;
 
             if (playerGuess === winningColor) {
                 const payoutMultiplier = ROULETTE_PAYOUTS[winningColor];
@@ -488,11 +512,11 @@
                 resultMessage = `❌ LOSS! The wheel landed on ${winningColor}. Better luck next time.`;
             }
 
-            // 3. Update UI
-            document.getElementById('rouletteDisplay').textContent = winningColor;
+            // 4. Update UI
+            rouletteDisplay.textContent = winningColor;
             document.getElementById('rouletteResultMessage').textContent = resultMessage;
 
-            // 4. Update database
+            // 5. Update database
             const { error } = await supabase
                 .from('players')
                 .update({ diamonds: currentDiamonds })
@@ -503,7 +527,7 @@
                 document.getElementById('rouletteResultMessage').textContent = `Error: Diamond update failed. ${error.message}`;
             }
             
-            // 5. Re-enable buttons and update final count
+            // 6. Re-enable buttons and update final count
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             buttons.forEach(btn => btn.disabled = false);
         }
