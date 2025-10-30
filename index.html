@@ -1,505 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diamond Casino 💎</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Slots</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #0b001f 0%, #000 100%);
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+    h1 {
+      font-size: 2.5em;
+      color: #8f4aff;
+      text-shadow: 0 0 20px #8f4aff;
+    }
 
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #1f084a, #0d011f);
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    #diamondDisplay {
+      font-size: 1.5em;
+      margin: 10px;
+      color: #00eaff;
+      text-shadow: 0 0 10px #00eaff;
+    }
 
-    /* 💎 Loading Screen */
-    #loadingScreen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(circle at center, #190033, #0b011b);
-      color: #00ffff;
-      z-index: 9999;
-      font-size: 24px;
-      transition: opacity 0.6s ease;
-    }
+    .slot {
+      display: inline-block;
+      width: 100px;
+      height: 100px;
+      margin: 10px;
+      background: black;
+      border: 3px solid #8f4aff;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #8f4aff;
+      font-size: 2em;
+      line-height: 100px;
+      color: #00eaff;
+      text-shadow: 0 0 15px #00eaff;
+    }
 
-    #loadingScreen.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
+    #spinBtn {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #8f4aff, #00eaff);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 20px #8f4aff;
+      transition: 0.3s;
+    }
 
-    .header {
-      background-color: #2a0c5c;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 30px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    #spinBtn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 40px #00eaff;
+    }
 
-    .diamond-icon {
-      font-size: 24px;
-      color: #00ffff;
-      margin-right: 8px;
-    }
+    .powerups {
+      margin-top: 20px;
+    }
 
-    .main-title {
-      font-size: 48px;
-      color: #00ffff;
-      text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-    }
+    .powerups button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #1e0037;
+      color: white;
+      text-shadow: 0 0 10px #00eaff;
+      box-shadow: 0 0 10px #8f4aff;
+      transition: 0.3s;
+    }
 
-    button {
-      background-color: #7b28c0;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 5px;
-      transition: background-color 0.2s, transform 0.1s;
-    }
+    .powerups button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00eaff;
+    }
 
-    button:hover:not(:disabled) {
-      background-color: #9c4ddf;
-      transform: translateY(-1px);
-    }
+    .jackpot {
+      font-size: 3em;
+      color: gold;
+      animation: jackpotAnim 1s infinite alternate;
+      text-shadow: 0 0 25px gold, 0 0 50px orange;
+    }
 
-    button:disabled {
-      background-color: #3f226b;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .game-display {
-      font-size: 60px;
-      margin: 20px 0;
-      background: #000;
-      padding: 20px;
-      border-radius: 10px;
-      border: 2px solid #00ffff;
-      letter-spacing: 10px;
-      min-height: 80px;
-    }
-
-    .message-box {
-      margin-top: 10px;
-      color: #00ffff;
-      font-weight: bold;
-    }
-
-    .roulette-result-red {
-      background: linear-gradient(45deg, #ff0000, #990000);
-      color: white;
-      border: 3px solid #ffaa00;
-    }
-
-    .roulette-result-black {
-      background: linear-gradient(45deg, #333333, #000000);
-      color: white;
-      border: 3px solid #666666;
-    }
-
-    .roulette-result-green {
-      background: linear-gradient(45deg, #33ff33, #009900);
-      color: #000;
-      border: 3px solid #00ffff;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 10;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.7);
-    }
-
-    .modal-content {
-      background-color: #2a0c5c;
-      margin: 10% auto;
-      padding: 30px;
-      border: 2px solid #00ffff;
-      width: 80%;
-      max-width: 600px;
-      border-radius: 10px;
-      position: relative;
-    }
-
-    .close {
-      color: #fff;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      cursor: pointer;
-    }
-
-    .admin-panel {
-      background: #333;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 8px;
-      text-align: left;
-    }
-
-    input {
-      padding: 8px;
-      margin-right: 5px;
-    }
-  </style>
+    @keyframes jackpotAnim {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.2); opacity: 0.8; }
+    }
+  </style>
 </head>
 <body>
+  <h1>💎 Diamond Slots 💎</h1>
+  <div id="diamondDisplay"></div>
 
-    <div id="loadingScreen">
-    <div style="font-size: 60px;">🎰</div>
-    <p>Loading Diamond Casino...</p>
-  </div>
+  <div id="slots">
+    <div class="slot" id="slot1">❔</div>
+    <div class="slot" id="slot2">❔</div>
+    <div class="slot" id="slot3">❔</div>
+  </div>
 
-  <div class="header">
-    <div id="userInfo">
-      <div style="font-size: 20px; font-weight: bold;">
-        <span class="diamond-icon">💎</span> Diamonds: <span id="diamondCount">0</span>
-      </div>
-      <div id="welcomeMessage" style="font-size: 16px; margin-top: 5px;">Guest</div>
-    </div>
+  <br>
+  <button id="spinBtn">🎰 SPIN</button>
 
-        <div id="authContainer" class="auth-container" style="display:flex; flex-direction: column; align-items: flex-end;">
-      <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-        <input type="email" id="authEmail" placeholder="Email Address">
-        <button onclick="handleMagicLinkAuth()">Send Magic Link</button>
-      </div>
-      <p id="authMessage" class="message-box" style="margin: 5px 0;"></p>
-    </div>
-        <button id="logoutButton" onclick="handleLogout()" style="display: none;">Logout</button>
-  </div>
+  <div class="powerups">
+    <button id="luckBtn">💫 2× Luck (Cost: 1000💎)</button>
+    <button id="rewardBtn">💎 2× Reward (Cost: 2000💎)</button>
+    <button id="freeSpinBtn">🎟 Free Spin (Cost: 1500💎)</button>
+  </div>
 
-  <div id="gameAreaContainer" style="display: none;">
-    <h1 class="main-title">DIAMOND CASINO</h1>
+  <h2 id="result"></h2>
 
-    <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
-      <button onclick="changeGameMode('slots')" id="slotsButton">🎰 Slots</button>
-      <button onclick="changeGameMode('roulette')" id="rouletteButton">🔴 Roulette</button>
-            <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
-    </div>
+  <audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-slot-machine-loop-2067.mp3"></audio>
+  <audio id="jackpotSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
 
-        <div id="slotsMode">
-      <h2>Diamond Slots ($<span id="slotsCostDisplay">100</span> per spin)</h2>
-      <button id="startGameButton" onclick="startGame()">Start Slot Spin</button>
-      <div class="game-display" id="slotDisplay">-- -- --</div>
-      <p id="resultMessage" class="message-box">Click Start Slot Spin!</p>
-    </div>
+  <script>
+    let diamonds = parseInt(localStorage.getItem('diamonds')) || 1000;
+    let luckMultiplier = 1;
+    let rewardMultiplier = 1;
+    let freeSpin = false;
 
-    <div id="rouletteMode" style="display:none;">
-      <h2>Roulette ($<span id="rouletteCostDisplay">500</span> per spin)</h2>
-      <div style="margin-bottom: 10px;">
-        <button onclick="startRoulette('Red')" style="background-color: #ff3333;">Bet Red (2x)</button>
-        <button onclick="startRoulette('Black')" style="background-color: #333333;">Bet Black (2x)</button>
-        <button onclick="startRoulette('Green')" style="background-color: #33ff33; color:black;">Bet Green (14x)</button>
-      </div>
-      <div class="game-display" id="rouletteDisplay">Spin the Wheel!</div>
-      <p id="rouletteResultMessage" class="message-box">Pick your color to place a bet!</p>
-    </div>
+    const symbols = ["💎", "🍒", "🍋", "🔔", "7️⃣", "⭐", "🔥"];
+    const diamondDisplay = document.getElementById("diamondDisplay");
+    const spinBtn = document.getElementById("spinBtn");
+    const resultDisplay = document.getElementById("result");
+    const spinSound = document.getElementById("spinSound");
+    const jackpotSound = document.getElementById("jackpotSound");
 
-    <div id="adminPanelContainer" class="admin-panel" style="display:none;">
-      <h3>Admin Panel</h3>
-      <input type="text" id="targetUserId" placeholder="Target User UUID" style="width:300px;">
-      <input type="number" id="newDiamondAmount" placeholder="New Diamond Amount">
-      <button onclick="updateUserDiamonds()">Set Diamonds</button>
-      <p id="adminMessage" style="color:yellow;"></p>
-    </div>
-  </div>
+    function updateDisplay() {
+      diamondDisplay.textContent = `💎 Diamonds: ${diamonds}`;
+      localStorage.setItem('diamonds', diamonds);
+    }
 
-    <div id="leaderboardModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('leaderboardModal')">&times;</span>
-      <h2>🏆 Live Leaderboard</h2>
-      <table id="leaderboardTable" style="width:100%; border-collapse:collapse; margin-top:20px;">
-        <thead>
-          <tr>
-            <th style="padding:10px; border-bottom:1px solid #00ffff;">Rank</th>
-            <th style="padding:10px; border-bottom:1px solid #00ffff;">Username</th>
-            <th style="padding:10px; border-bottom:1px solid #00ffff;">Diamonds</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboardBody"></tbody>
-      </table>
-    </div>
-  </div>
+    function spin() {
+      if (diamonds <= 0 && !freeSpin) {
+        resultDisplay.textContent = "❌ You ran out of diamonds!";
+        return;
+      }
 
-  <script>
-    // ✅ Supabase credentials
-    const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y'; // truncated for safety
-    let supabaseClient;
-    let currentUserID = null, currentUsername = 'Guest', currentDiamonds = 0, isUserAdmin = false;
+      if (!freeSpin) diamonds -= 50;
+      freeSpin = false;
 
-    const SYMBOLS = ['💎','7','🔔','🍒','🍋'];
-    const PAYOUTS = {'💎💎💎':5000,'777':2500,'🔔🔔🔔':1000,'🍒🍒🍒':500,'🍋🍋🍋':250};
-    const COST_PER_SPIN = 100;
-    const ROULETTE_COST = 500;
-    const ROULETTE_WHEEL = ['Red','Red','Black','Black','Green'];
-    const ROULETTE_PAYOUTS = {'Red':2,'Black':2,'Green':14};
-    // ❌ Removed DAILY_BONUS_AMOUNT
+      spinSound.play();
+      const slot1 = document.getElementById("slot1");
+      const slot2 = document.getElementById("slot2");
+      const slot3 = document.getElementById("slot3");
 
-    // ✅ Helper: fade out loading
-    function hideLoading() {
-      const loader = document.getElementById('loadingScreen');
-      loader.classList.add('fade-out');
-      setTimeout(() => loader.remove(), 700);
-    }
+      const s1 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s2 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-    // ✅ Lazy init Supabase
-    window.addEventListener('load', async () => {
-      hideLoading();
+      slot1.textContent = s1;
+      slot2.textContent = s2;
+      slot3.textContent = s3;
 
-      // Wait for script to load
-      const waitForSupabase = () => new Promise(res => {
-        const check = () => (window.supabase ? res(window.supabase) : setTimeout(check, 50));
-        check();
-      });
-      const sb = await waitForSupabase();
+      if (s1 === s2 && s2 === s3) {
+        let reward = 500 * rewardMultiplier;
+        if (Math.random() < 0.1 * luckMultiplier) {
+          reward *= 5;
+          jackpotSound.play();
+          resultDisplay.innerHTML = `<span class='jackpot'>🎉 JACKPOT! +${reward} 💎</span>`;
+        } else {
+          resultDisplay.textContent = `🎉 You won +${reward} 💎!`;
+        }
+        diamonds += reward;
+      } else {
+        resultDisplay.textContent = "😢 Try again!";
+      }
 
-      supabaseClient = sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      updateDisplay();
+    }
 
-      document.getElementById('slotsCostDisplay').textContent = COST_PER_SPIN;
-      document.getElementById('rouletteCostDisplay').textContent = ROULETTE_COST;
+    document.getElementById("luckBtn").onclick = () => {
+      if (diamonds >= 1000) {
+        diamonds -= 1000;
+        luckMultiplier = 2;
+        resultDisplay.textContent = "💫 Luck power-up activated for 3 spins!";
+        setTimeout(() => { luckMultiplier = 1; }, 3 * 5000);
+        updateDisplay();
+      }
+    };
 
-      // 🚀 AUTH STATE LISTENER (Crucial for Magic Link)
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session?.user) {
-          loadUserData();
-        } else if (event === 'SIGNED_OUT') {
-          handleLogout();
-        }
-      });
-      
-      // Check existing session (instant)
-      const { data: session } = await supabaseClient.auth.getSession();
-      if (session?.session?.user) {
-        loadUserData();
-      } else {
-        document.getElementById('authContainer').style.display = 'flex';
-      }
-      changeGameMode('slots');
-    });
+    document.getElementById("rewardBtn").onclick = () => {
+      if (diamonds >= 2000) {
+        diamonds -= 2000;
+        rewardMultiplier = 2;
+        resultDisplay.textContent = "💎 Double rewards active for 3 spins!";
+        setTimeout(() => { rewardMultiplier = 1; }, 3 * 5000);
+        updateDisplay();
+      }
+    };
 
-    // ✅ Magic Link Login Function
-    async function handleMagicLinkAuth() {
-      const email = document.getElementById('authEmail').value;
-      const msg = document.getElementById('authMessage');
-      
-      if (!email) {
-        msg.textContent = 'Please enter your email.';
-        return;
-      }
+    document.getElementById("freeSpinBtn").onclick = () => {
+      if (diamonds >= 1500) {
+        diamonds -= 1500;
+        freeSpin = true;
+        resultDisplay.textContent = "🎟 Free spin ready!";
+        updateDisplay();
+      }
+    };
 
-      msg.textContent = 'Sending magic link...';
-      
-      const { error } = await supabaseClient.auth.signInWithOtp({ 
-        email: email,
-        options: {
-          emailRedirectTo: window.location.origin 
-        }
-      });
-
-      if (error) {
-        msg.textContent = `Error: ${error.message}`;
-      } else {
-        msg.textContent = '✅ Magic Link sent! Check your email to log in.';
-        // Disable inputs/buttons until user clicks the link
-        document.getElementById('authEmail').disabled = true;
-        document.querySelector('#authContainer button').disabled = true;
-      }
-    }
-
-    async function handleLogout() {
-      await supabaseClient.auth.signOut();
-      currentUserID = null;
-      currentDiamonds = 0;
-      document.getElementById('gameAreaContainer').style.display = 'none';
-      document.getElementById('authContainer').style.display = 'flex'; 
-      document.getElementById('logoutButton').style.display = 'none';
-      document.getElementById('diamondCount').textContent = 0;
-      document.getElementById('welcomeMessage').textContent = 'Guest';
-      document.getElementById('authMessage').textContent = ''; 
-    }
-
-    async function loadUserData() {
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if (!userData.user) return;
-      
-      // ⚙️ Supabase Profile Check/Creation
-      // ❌ Removed 'last_daily_claim' from the select statement
-      let { data: profile } = await supabaseClient
-        .from('players')
-        .select('id, username, diamonds, is_admin')
-        .eq('id', userData.user.id)
-        .single();
-
-      if (!profile) {
-        // 🆕 Create a new profile for the user if it doesn't exist (important for sign-ups)
-        const defaultUsername = userData.user.email ? userData.user.email.split('@')[0] : 'Player-' + Math.floor(Math.random()*1000);
-        // ❌ Removed 'last_daily_claim' from the insert and select statements
-        const { data: newProfile } = await supabaseClient
-          .from('players')
-          .insert([{ id: userData.user.id, username: defaultUsername, diamonds: 5000 }]) // Give starting diamonds
-          .select('id, username, diamonds, is_admin')
-          .single();
-        profile = newProfile;
-      }
-          
-      if (!profile) return;
-      
-      currentUserID = profile.id;
-      currentUsername = profile.username;
-      currentDiamonds = profile.diamonds;
-      isUserAdmin = profile.is_admin;
-      
-      document.getElementById('diamondCount').textContent = currentDiamonds;
-      document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
-      document.getElementById('authContainer').style.display = 'none';
-      document.getElementById('logoutButton').style.display = 'block';
-      document.getElementById('gameAreaContainer').style.display = 'block';
-      document.getElementById('authMessage').textContent = ''; // Clear auth message on success
-      if(isUserAdmin) {
-        document.getElementById('adminPanelContainer').style.display = 'block';
-      }
-    }
-
-    // --- Game Logic ---
-
-    function changeGameMode(mode) {
-      document.getElementById('slotsMode').style.display = (mode === 'slots') ? 'block' : 'none';
-      document.getElementById('rouletteMode').style.display = (mode === 'roulette') ? 'block' : 'none';
-    }
-
-    function getRandomSymbol() { return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]; }
-    function calculateWinnings(syms) {
-      const s = syms.join('');
-      if (PAYOUTS[s]) return PAYOUTS[s];
-      if (syms.filter(x => x === '💎').length === 2) return 200;
-      return 0;
-    }
-
-    async function startGame() {
-      if (currentDiamonds < COST_PER_SPIN) {
-        document.getElementById('resultMessage').textContent = "Not enough diamonds!";
-        return;
-      }
-      currentDiamonds -= COST_PER_SPIN;
-      document.getElementById('diamondCount').textContent = currentDiamonds;
-      
-      // Spinning animation (simplified)
-      const spinInterval = setInterval(() => {
-        document.getElementById('slotDisplay').textContent = `${getRandomSymbol()} ${getRandomSymbol()} ${getRandomSymbol()}`;
-      }, 100);
-      
-      document.getElementById('startGameButton').disabled = true;
-
-      setTimeout(async () => {
-        clearInterval(spinInterval);
-        const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-        const win = calculateWinnings(results);
-        currentDiamonds += win;
-        document.getElementById('slotDisplay').textContent = results.join(' ');
-        document.getElementById('resultMessage').textContent = win > 0 ? `You won ${win} diamonds!` : 'Try again!';
-        document.getElementById('diamondCount').textContent = currentDiamonds;
-        document.getElementById('startGameButton').disabled = false;
-        
-        // Update DB
-        const { error } = await supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
-        if (error) console.error("Database update error:", error);
-      }, 2000); // Spin for 2 seconds
-    }
-
-    async function startRoulette(choice) {
-      if (currentDiamonds < ROULETTE_COST) {
-        document.getElementById('rouletteResultMessage').textContent = "Not enough diamonds!";
-        return;
-      }
-      currentDiamonds -= ROULETTE_COST;
-      document.getElementById('diamondCount').textContent = currentDiamonds;
-      
-      // Disable buttons during spin
-      document.querySelectorAll('#rouletteMode button').forEach(btn => btn.disabled = true);
-
-      const spinInterval = setInterval(() => {
-        const randomColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
-        document.getElementById('rouletteDisplay').textContent = randomColor;
-        document.getElementById('rouletteDisplay').className = `game-display roulette-result-${randomColor.toLowerCase()}`;
-      }, 100);
-      
-      setTimeout(async () => {
-        clearInterval(spinInterval);
-        const color = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
-        const mult = (choice === color) ? ROULETTE_PAYOUTS[color] : 0;
-        const winnings = ROULETTE_COST * mult;
-
-        if (mult > 0) currentDiamonds += winnings;
-        
-        document.getElementById('rouletteDisplay').textContent = color;
-        document.getElementById('rouletteDisplay').className = `game-display roulette-result-${color.toLowerCase()}`;
-        document.getElementById('rouletteResultMessage').textContent = winnings > 0 ? `WIN! You won ${winnings} diamonds!` : 'You lost!';
-        document.getElementById('diamondCount').textContent = currentDiamonds;
-        
-        // Re-enable buttons
-        document.querySelectorAll('#rouletteMode button').forEach(btn => btn.disabled = false);
-        
-        // Update DB
-        const { error } = await supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
-        if (error) console.error("Database update error:", error);
-      }, 3000); // Spin for 3 seconds
-    }
-
-    // ❌ REMOVED: Daily Bonus Claim Function
-
-    // --- Leaderboard Logic ---
-    async function openLeaderboardModal() {
-      const { data: players, error } = await supabaseClient
-        .from('players')
-        .select('username, diamonds')
-        .order('diamonds', { ascending: false })
-        .limit(10);
-      
-      const body = document.getElementById('leaderboardBody');
-      body.innerHTML = '';
-      
-      if (players) {
-        players.forEach((p, index) => {
-          const row = body.insertRow();
-          row.insertCell(0).textContent = index + 1;
-          row.insertCell(1).textContent = p.username;
-          row.insertCell(2).textContent = p.diamonds.toLocaleString();
-          if (p.username === currentUsername) row.style.fontWeight = 'bold'; // Highlight current user
-        });
-      }
-      
-      document.getElementById('leaderboardModal').style.display = 'block';
-    }
-    
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-  </script>
+    spinBtn.addEventListener("click", spin);
+    updateDisplay();
+  </script>
 </body>
 </html>
