@@ -3,118 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Slots</title>
+    <title>Diamond Slots & Roulette</title>
     <style>
-        /* CSS styles remain the same for visual appearance */
+        /* --- General Styles --- */
         body {
             margin: 0;
             background: radial-gradient(circle at center, #0b001f 0%, #000 100%);
             font-family: 'Orbitron', sans-serif;
             color: white;
             text-align: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            padding-bottom: 50px;
         }
 
-        h1 {
-            font-size: 2.5em;
+        h1, h2 {
             color: #8f4aff;
-            text-shadow: 0 0 20px #8f4aff;
+            text-shadow: 0 0 15px #8f4aff;
         }
 
-        #diamondDisplay {
-            font-size: 1.5em;
-            margin: 10px;
+        /* --- Slots Game Styles --- */
+        .slot {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+            background: black;
+            border: 3px solid #8f4aff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #8f4aff;
+            font-size: 1.8em;
+            line-height: 80px;
             color: #00eaff;
             text-shadow: 0 0 10px #00eaff;
         }
 
-        .slot {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            margin: 10px;
-            background: black;
-            border: 3px solid #8f4aff;
-            border-radius: 15px;
-            box-shadow: 0 0 15px #8f4aff;
-            font-size: 2em;
-            line-height: 100px;
-            color: #00eaff;
-            text-shadow: 0 0 15px #00eaff;
+        /* --- Roulette Styles --- */
+        #rouletteGame {
+            margin-top: 40px;
+            border-top: 1px solid #4a4a8f;
+            padding-top: 20px;
+            max-width: 700px; /* Increased width for more buttons */
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        #spinBtn {
-            padding: 15px 30px;
-            font-size: 1.2em;
+        #wheelResult {
+            font-size: 2em;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .roulette-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        .roulette-btn.selected {
+            border-color: yellow;
+            box-shadow: 0 0 10px yellow;
+        }
+
+        .red-btn { background-color: #ff4d4d; color: white; }
+        .black-btn { background-color: #333; color: white; }
+        .green-btn { background-color: #5cb85c; color: white; }
+        .low-high-btn { background-color: #006699; color: white; }
+        .odd-even-btn { background-color: #993399; color: white; }
+
+        /* --- Common Button/Display Styles --- */
+        #spinBtn, #rouletteSpinBtn {
+            padding: 12px 25px;
+            font-size: 1.1em;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             background: linear-gradient(90deg, #8f4aff, #00eaff);
             color: white;
             cursor: pointer;
-            box-shadow: 0 0 20px #8f4aff;
-            transition: 0.3s;
-        }
-
-        #spinBtn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 40px #00eaff;
-        }
-
-        .powerups button {
-            margin: 10px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #1e0037;
-            color: white;
-            text-shadow: 0 0 10px #00eaff;
-            box-shadow: 0 0 10px #8f4aff;
-            transition: 0.3s;
-        }
-
-        .powerups button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px #00eaff;
-        }
-
-        #leaderboard {
-            margin-top: 30px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 15px;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
             box-shadow: 0 0 15px #8f4aff;
-        }
-        
-        #leaderboardList li {
-            text-align: left;
-            padding: 5px 0;
-            list-style-type: none; 
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            margin-top: 10px;
         }
 
-        #leaderboardList li:last-child {
-             border-bottom: none;
-        }
-
-        .jackpot {
-            font-size: 3em;
-            color: gold;
-            animation: jackpotAnim 1s infinite alternate;
-            text-shadow: 0 0 25px gold, 0 0 50px orange;
-        }
-
-        @keyframes jackpotAnim {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0.8; }
+        input[type="number"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #333;
+            color: white;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>💎 Diamond Slots 💎</h1>
+    <h1>💎 Diamond Gaming Hub 💎</h1>
 
     <div id="loginBox" style="margin-bottom: 20px;">
         <input id="loginUsername" placeholder="Username">
@@ -127,29 +111,44 @@
     <div id="gameArea" style="display:none;">
         <div id="diamondDisplay"></div>
 
+        <h2>🎰 Slot Machine (High Odds)</h2>
+        <input type="number" id="slotBetAmount" placeholder="Enter Bet (Min 10)" value="50" min="10" max="10000">
         <div id="slots">
             <div class="slot" id="slot1">❔</div>
             <div class="slot" id="slot2">❔</div>
             <div class="slot" id="slot3">❔</div>
         </div>
-
         <br>
-        <button id="spinBtn">🎰 SPIN</button>
+        <button id="spinBtn">SPIN</button>
+        <h3 id="result"></h3>
 
-        <div class="powerups">
-            <button id="luckBtn">💫 2× Luck (1000💎)</button>
-            <button id="rewardBtn">💎 2× Reward (2000💎)</button>
-            <button id="freeSpinBtn">🎟 Free Spin (1500💎)</button>
+        <div id="rouletteGame">
+            <h2>🔴 Roulette Wheel 🟢</h2>
+            <div id="wheelResult">Spin to see result!</div>
+
+            <input type="number" id="rouletteBetAmount" placeholder="Enter Diamond Bet" value="50" min="50">
+            
+            <div id="bettingOptions" style="margin: 15px 0;">
+                <button class="roulette-btn red-btn" onclick="placeBet('red')">Red (2x)</button>
+                <button class="roulette-btn black-btn" onclick="placeBet('black')">Black (2x)</button>
+                <button class="roulette-btn green-btn" onclick="placeBet('green')">Green (35x)</button>
+            </div>
+            
+            <div id="bettingOptions2" style="margin: 15px 0;">
+                <button class="roulette-btn odd-even-btn" onclick="placeBet('odd')">Odd (2x)</button>
+                <button class="roulette-btn odd-even-btn" onclick="placeBet('even')">Even (2x)</button>
+                <button class="roulette-btn low-high-btn" onclick="placeBet('low')">1-18 (2x)</button>
+                <button class="roulette-btn low-high-btn" onclick="placeBet('high')">19-36 (2x)</button>
+            </div>
+            
+            <button id="rouletteSpinBtn" onclick="spinRoulette()">Spin Roulette</button>
+            <p style="font-size: 0.8em; margin-top: 10px;">Numbers: Green (0). All 2x bets lose on 0.</p>
         </div>
-
-        <h2 id="result"></h2>
     </div>
-
+    
     <div id="leaderboard">
         <h3>🏆 Live Leaderboard</h3>
-        <ul id="leaderboardList">
-            <li>Loading...</li>
-        </ul>
+        <ul id="leaderboardList"><li>Loading...</li></ul>
     </div>
 
     <audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-slot-machine-loop-2067.mp3"></audio>
@@ -157,253 +156,145 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ⚠️ 1. Supabase Connection (AUTOFILLED)
+    // 1. Supabase Connection (AUTOFILLED)
     const SUPABASE_URL = "https://qknwaibcivwzmdwdjluq.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    // 🔹 2. Game State Variables
+    // 2. Game State Variables
     let currentUserId = null;
     let currentUsername = null;
     let diamonds = 0;
-    let luckMultiplier = 1;
-    let rewardMultiplier = 1;
-    let freeSpin = false;
     const STARTING_DIAMONDS = 1000;
     
-    // Game constants
-    const symbols = ["💎", "🍒", "🍋", "🔔", "7️⃣", "⭐", "🔥"];
+    // ROULETTE VARIABLES
+    let selectedBetType = 'red'; // Default bet
+    const ROULETTE_NUMBERS = 37; // 0 to 36
+    
+    // Game constants (Elements)
     const diamondDisplay = document.getElementById("diamondDisplay");
-    const resultDisplay = document.getElementById("result");
-    const spinSound = document.getElementById("spinSound");
-    const jackpotSound = document.getElementById("jackpotSound");
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const gameArea = document.getElementById("gameArea");
+    const resultDisplay = document.getElementById("result"); // Slots result
+    const wheelResultDisplay = document.getElementById("wheelResult"); // Roulette result
     const authStatus = document.getElementById("authStatus");
     const PLAYER_TABLE = "players"; 
+    
+    // --- AUTH, PROFILE, DISPLAY, AND SAVE FUNCTIONS (Unchanged) ---
 
-    // --- 3. CORE FUNCTIONS ---
-
-    // Load user profile and set up the game UI
     async function loadUserProfile(userId) {
         currentUserId = userId;
-
-        // RLS SELECT is applied here.
-        const { data: profile, error } = await supabase
-            .from(PLAYER_TABLE)
-            .select("username, diamonds")
-            .eq("id", userId)
-            .single();
-
-        if (error) {
-            console.error("Error fetching profile:", error);
-            authStatus.textContent = "Error loading profile data.";
-            return;
-        }
+        const { data: profile, error } = await supabase.from(PLAYER_TABLE).select("username, diamonds").eq("id", userId).single();
+        if (error) { console.error("Error fetching profile:", error); authStatus.textContent = "Error loading profile data."; return; }
 
         currentUsername = profile.username;
         diamonds = profile.diamonds;
-        
-        loginBox.style.display = 'block';
-        gameArea.style.display = 'block';
-        
-        // Hide login fields and show logout button
-        loginBox.querySelector('input:nth-child(1)').style.display = 'none';
-        loginBox.querySelector('input:nth-child(2)').style.display = 'none';
-        loginBox.querySelector('button:nth-child(3)').style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
-
+        document.getElementById('loginBox').style.display = 'block';
+        document.getElementById('gameArea').style.display = 'block';
+        document.getElementById('loginBox').querySelector('input:nth-child(1)').style.display = 'none';
+        document.getElementById('loginBox').querySelector('input:nth-child(2)').style.display = 'none';
+        document.getElementById('loginBox').querySelector('button:nth-child(3)').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
         authStatus.textContent = `Welcome, ${currentUsername}!`;
         updateDisplay();
-        
         setupRealtimeLeaderboard();
     }
 
-    // Secure Login / Signup Function (FINAL FIXED VERSION)
     async function handleAuth() {
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
-
-        if (!username || !password) {
-            authStatus.textContent = "Please enter both username and password.";
-            return;
-        }
+        if (!username || !password) { authStatus.textContent = "Please enter both username and password."; return; }
         
-        // --- FINAL ROBUST FIX FOR EMAIL VALIDATION AND DOMAIN CHANGE ---
-        const safeUsername = username.toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9.-]/g, '-') // 1. Convert illegal characters (spaces, etc.) to hyphens
-            .replace(/^-+|-+$/g, '')   // 2. Remove leading or trailing hyphens
-            .replace(/\.{2,}/g, '.');   // 3. Prevent double dots
-
-        if (safeUsername === '') {
-             authStatus.textContent = "Invalid username. Please use letters and numbers.";
-             return;
-        }
+        const safeUsername = username.toLowerCase().trim().replace(/[^a-z0-9.-]/g, '-').replace(/^-+|-+$/g, '').replace(/\.{2,}/g, '.');
+        if (safeUsername === '') { authStatus.textContent = "Invalid username. Please use letters and numbers."; return; }
         
-        // Use a more common dummy TLD (.co) to avoid Supabase validator rejection
+        // Using the corrected domain
         const email = `${safeUsername}@gamemail.co`; 
-        // ------------------------------------------------------------------
-
         authStatus.textContent = "Processing credentials...";
 
         // A. Attempt Login
-        let { data: sessionData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (sessionData?.user) {
-             // Successful Login
-             await loadUserProfile(sessionData.user.id);
-             return;
-        } 
+        let { data: sessionData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if (sessionData?.user) { await loadUserProfile(sessionData.user.id); return; } 
         
-        // B. Attempt Signup (if login failed with invalid credentials)
+        // B. Attempt Signup
         if (loginError && loginError.message === 'Invalid login credentials') {
             authStatus.textContent = "Attempting registration...";
-            
-            // 1. Create the user in auth.users
-            let { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: { data: { username: username } }
-            });
+            let { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password, options: { data: { username: username } } });
+            if (signUpError) { authStatus.textContent = `Registration failed: ${signUpError.message}`; console.error("Signup Error:", signUpError); return; }
 
-            if (signUpError) {
-                 authStatus.textContent = `Registration failed: ${signUpError.message}`;
-                 console.error("Signup Error:", signUpError);
-                 return;
-            }
-
-            // 2. CRITICAL FIX: Ensure the session is ready before RLS-protected INSERT
+            // CRITICAL FIX: Ensure session is ready before RLS-protected INSERT
             let session = signUpData.session;
-            if (!session) {
-                // Fallback: Get the session explicitly if the signup response didn't contain it
-                const { data: { session: newSession } } = await supabase.auth.getSession();
-                session = newSession;
-            }
+            if (!session) { const { data: { session: newSession } } = await supabase.auth.getSession(); session = newSession; }
 
             if (session) {
-                // 3. RLS-protected INSERT into public.players
                 const { error: insertError } = await supabase.from(PLAYER_TABLE).insert([{ id: session.user.id, username: username, diamonds: STARTING_DIAMONDS }]);
-                    
-                if (insertError) {
-                    // This error indicates the RLS INSERT policy is still incorrect or the username/ID already exists.
-                    authStatus.textContent = `Registration Error: Profile creation failed (RLS issue). Please ensure the INSERT policy is set to "auth.uid() = id".`;
-                    await supabase.auth.signOut(); // Log out the partial user
-                    return;
-                }
-
+                if (insertError) { authStatus.textContent = `Registration Error: Profile creation failed (RLS issue).`; await supabase.auth.signOut(); return; }
                 await loadUserProfile(session.user.id);
-
-            } else {
-                 authStatus.textContent = "Registration failed: Could not establish a session after signup.";
-            }
-
-        } else if (loginError) {
-             authStatus.textContent = `Login Error: ${loginError.message}`;
-        }
+            } else { authStatus.textContent = "Registration failed: Could not establish a session after signup."; }
+        } else if (loginError) { authStatus.textContent = `Login Error: ${loginError.message}`; }
     }
 
-
-    // Logout Function
-    async function logout() {
-        await supabase.auth.signOut();
-        resetUI();
-    }
-
-    // Reset UI to logged-out state
+    async function logout() { await supabase.auth.signOut(); resetUI(); }
+    
     function resetUI() {
-        currentUserId = null;
-        currentUsername = null;
-        diamonds = 0;
-        
-        gameArea.style.display = 'none';
+        currentUserId = null; currentUsername = null; diamonds = 0;
+        document.getElementById('gameArea').style.display = 'none';
         authStatus.textContent = "Please log in or register to play.";
-        
-        loginBox.querySelector('input:nth-child(1)').style.display = 'inline-block';
-        loginBox.querySelector('input:nth-child(2)').style.display = 'inline-block';
-        loginBox.querySelector('button:nth-child(3)').style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-
+        document.getElementById('loginBox').querySelector('input:nth-child(1)').style.display = 'inline-block';
+        document.getElementById('loginBox').querySelector('input:nth-child(2)').style.display = 'inline-block';
+        document.getElementById('loginBox').querySelector('button:nth-child(3)').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById("leaderboardList").innerHTML = '<li>Loading...</li>';
-        supabase.removeAllChannels(); 
-        fetchLeaderboard(); 
+        supabase.removeAllChannels(); fetchLeaderboard(); 
     }
 
-    // Save Diamonds to Supabase (Secured by RLS UPDATE policy)
     async function saveDiamonds() {
         if (!currentUserId) return;
-        
-        // RLS UPDATE is applied here.
-        const { error } = await supabase
-            .from(PLAYER_TABLE)
-            .update({ diamonds })
-            .eq("id", currentUserId);
-
-        if (error) {
-            console.error("Error saving diamonds:", error);
-            authStatus.textContent = `Error saving data: ${error.message}`;
-        }
+        const { error } = await supabase.from(PLAYER_TABLE).update({ diamonds }).eq("id", currentUserId);
+        if (error) { console.error("Error saving diamonds:", error); authStatus.textContent = `Error saving data: ${error.message}`; }
     }
 
-    // Update UI Display
     function updateDisplay() {
-        diamondDisplay.textContent = `👤 ${currentUsername} | 💎 Diamonds: ${diamonds} | Luck: ${luckMultiplier}x | Reward: ${rewardMultiplier}x`;
+        diamondDisplay.textContent = `👤 ${currentUsername} | 💎 Diamonds: ${diamonds}`;
     }
 
-    // Fetch and display the Leaderboard
     async function fetchLeaderboard() {
-        // RLS SELECT is applied here.
-        const { data, error } = await supabase
-            .from(PLAYER_TABLE)
-            .select("username, diamonds")
-            .order("diamonds", { ascending: false })
-            .limit(10);
-
-        if (error) {
-            console.error("Error fetching leaderboard:", error);
-            document.getElementById("leaderboardList").innerHTML = `<li>Error loading leaderboard.</li>`;
-            return;
-        }
-
+        const { data, error } = await supabase.from(PLAYER_TABLE).select("username, diamonds").order("diamonds", { ascending: false }).limit(10);
+        if (error) { console.error("Error fetching leaderboard:", error); document.getElementById("leaderboardList").innerHTML = `<li>Error loading leaderboard.</li>`; return; }
         const leaderboardList = document.getElementById("leaderboardList");
         leaderboardList.innerHTML = data.map((p, i) => 
             `<li>${i + 1}. **${p.username}** — 💎 ${p.diamonds}</li>`
         ).join('');
     }
 
-    // --- 4. REALTIME LEADERBOARD ---
     function setupRealtimeLeaderboard() {
-        supabase
-            .channel('leaderboard-changes')
-            .on('postgres_changes', { 
-                event: 'UPDATE', 
-                schema: 'public', 
-                table: PLAYER_TABLE 
-            }, fetchLeaderboard)
-            .subscribe();
-        
+        supabase.channel('leaderboard-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: PLAYER_TABLE }, fetchLeaderboard).subscribe();
         fetchLeaderboard(); 
     }
 
-    // --- 5. GAME LOGIC ---
+    // --- SLOTS GAME LOGIC (Variable Bet/High Odds) ---
+    const symbols = [
+        "💎", "💎", "💎", "7️⃣", "7️⃣", "7️⃣", "7️⃣", 
+        "🍒", "🍒", "🍋", "🍋", "🔔", "⭐", "🔥"   
+    ];
+    document.getElementById("spinBtn").onclick = spin;
+
     function spin() {
         if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds < 50 && !freeSpin) {
-            resultDisplay.textContent = "❌ Out of diamonds! Spin costs 50 💎.";
+        
+        const betInput = document.getElementById('slotBetAmount');
+        const cost = parseInt(betInput.value);
+        
+        if (isNaN(cost) || cost < 10) { 
+            resultDisplay.textContent = "Minimum slot bet is 10 💎.";
+            betInput.value = 10;
+            return;
+        }
+        if (diamonds < cost) { 
+            resultDisplay.textContent = `❌ Out of diamonds! Spin costs ${cost} 💎.`; 
             return;
         }
 
-        if (!freeSpin) {
-            diamonds -= 50; 
-        }
-        freeSpin = false;
-
-        spinSound.currentTime = 0;
-        spinSound.play();
+        diamonds -= cost;
+        document.getElementById("spinSound").play();
 
         const s1 = symbols[Math.floor(Math.random() * symbols.length)];
         const s2 = symbols[Math.floor(Math.random() * symbols.length)];
@@ -413,71 +304,121 @@
         document.getElementById("slot2").textContent = s2;
         document.getElementById("slot3").textContent = s3;
 
+        let multiplier = 0;
         if (s1 === s2 && s2 === s3) {
-            let reward = 500 * rewardMultiplier;
-            
-            if (Math.random() < 0.1 * luckMultiplier) {
-                reward *= 5;
-                jackpotSound.currentTime = 0;
-                jackpotSound.play();
-                resultDisplay.innerHTML = `<span class='jackpot'>🎉 JACKPOT! +${reward} 💎</span>`;
-            } else {
-                resultDisplay.textContent = `🎉 You won +${reward} 💎!`;
-            }
+            if (s1 === "💎") { multiplier = 50; document.getElementById("jackpotSound").play();
+            } else if (s1 === "7️⃣") { multiplier = 20;
+            } else { multiplier = 10; }
+        } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+            multiplier = 2; 
+        }
+
+        let reward = cost * multiplier;
+        
+        if (reward > 0) {
             diamonds += reward;
+            resultDisplay.textContent = `🎉 You won +${reward} 💎! (Multiplier: ${multiplier}x)`;
         } else {
             resultDisplay.textContent = "😢 Try again!";
         }
-
+        
         updateDisplay();
         saveDiamonds(); 
     }
-
-    // --- 6. POWER-UP FUNCTIONS (Simplified to only call updateDisplay/saveDiamonds) ---
-    document.getElementById("spinBtn").onclick = spin;
-
-    document.getElementById("luckBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 1000) { 
-            diamonds -= 1000; 
-            luckMultiplier = 2; 
-            setTimeout(() => { luckMultiplier = 1; resultDisplay.textContent = "💫 Luck boost ended."; updateDisplay(); }, 15000); 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "💫 Luck boost active!"; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (1000) for Luck Boost!";
-        }
-    };
-
-    document.getElementById("rewardBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 2000) { 
-            diamonds -= 2000; 
-            rewardMultiplier = 2; 
-            setTimeout(() => { rewardMultiplier = 1; resultDisplay.textContent = "💎 Double rewards ended."; updateDisplay(); }, 15000); 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "💎 Double rewards active!"; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (2000) for Double Rewards!";
-        }
-    };
-
-    document.getElementById("freeSpinBtn").onclick = () => { 
-        if (!currentUserId) return authStatus.textContent = "Please log in first!";
-        if (diamonds >= 1500) { 
-            diamonds -= 1500; 
-            freeSpin = true; 
-            updateDisplay(); 
-            saveDiamonds();
-            resultDisplay.textContent = "🎟 Free spin ready! Spin now."; 
-        } else {
-            resultDisplay.textContent = "❌ Not enough diamonds (1500) for a Free Spin!";
-        }
-    };
     
-    // --- 7. INITIALIZATION (Check for existing session) ---
+    // --- ROULETTE GAME LOGIC (ADVANCED) ---
+
+    function isRed(number) {
+        const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        return redNumbers.includes(number);
+    }
+
+    function placeBet(type) {
+        selectedBetType = type;
+        wheelResultDisplay.textContent = `Bet placed on: ${type.toUpperCase()}. Spin now!`;
+        
+        // Visual feedback
+        document.querySelectorAll('.roulette-btn').forEach(btn => btn.classList.remove('selected'));
+        // Uses the type to find the correct button class (e.g., 'red' + '-btn')
+        const typeClass = type === 'red' || type === 'black' || type === 'green' ? `${type}-btn` : 
+                          type === 'odd' || type === 'even' ? 'odd-even-btn' : 'low-high-btn';
+
+        // Select the button that has both the correct type and the correct class
+        let selector = `.roulette-btn.${typeClass}[onclick*='${type}']`;
+        document.querySelector(selector).classList.add('selected');
+    }
+
+    function spinRoulette() {
+        if (!currentUserId) return authStatus.textContent = "Please log in first!";
+        const betAmountInput = document.getElementById('rouletteBetAmount');
+        let betAmount = parseInt(betAmountInput.value);
+
+        if (!selectedBetType) {
+            wheelResultDisplay.textContent = "Please select a bet.";
+            return;
+        }
+        if (isNaN(betAmount) || betAmount < 50) {
+            wheelResultDisplay.textContent = "Minimum bet is 50 💎.";
+            betAmountInput.value = 50;
+            return;
+        }
+        if (diamonds < betAmount) {
+            wheelResultDisplay.textContent = "Insufficient diamonds to place that bet.";
+            return;
+        }
+
+        diamonds -= betAmount;
+        updateDisplay();
+        
+        const winningNumber = Math.floor(Math.random() * ROULETTE_NUMBERS);
+        
+        let winningColor = 'black';
+        let payoutMultiplier = 0;
+        
+        if (winningNumber === 0) {
+            winningColor = 'green';
+            if (selectedBetType === 'green') {
+                payoutMultiplier = 35; // Wins only on green
+            }
+        } else {
+            // All 2x bets
+            if (selectedBetType === 'green') {
+                // If the user bet green, they lose if the result isn't 0.
+            } else if (selectedBetType === 'red' && isRed(winningNumber)) {
+                payoutMultiplier = 2;
+            } else if (selectedBetType === 'black' && !isRed(winningNumber)) {
+                payoutMultiplier = 2;
+            } else if (selectedBetType === 'odd' && winningNumber % 2 !== 0) {
+                payoutMultiplier = 2;
+            } else if (selectedBetType === 'even' && winningNumber % 2 === 0) {
+                payoutMultiplier = 2;
+            } else if (selectedBetType === 'low' && winningNumber >= 1 && winningNumber <= 18) {
+                payoutMultiplier = 2;
+            } else if (selectedBetType === 'high' && winningNumber >= 19 && winningNumber <= 36) {
+                payoutMultiplier = 2;
+            }
+            // Determine winning color for display purposes
+            if (isRed(winningNumber)) winningColor = 'red';
+        }
+
+        let winnings = betAmount * payoutMultiplier;
+        
+        wheelResultDisplay.style.color = winningColor;
+        wheelResultDisplay.textContent = `Result: ${winningNumber} (${winningColor.toUpperCase()})`;
+
+        if (payoutMultiplier > 0) {
+            diamonds += winnings;
+            wheelResultDisplay.textContent += ` 🎉 You WON ${winnings} 💎!`;
+        } else {
+            wheelResultDisplay.textContent += ` 😢 You lost.`;
+        }
+        
+        saveDiamonds();
+        updateDisplay();
+    }
+
+
+    // --- INITIALIZATION ---
     async function initialize() {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -487,6 +428,8 @@
             resetUI();
             setupRealtimeLeaderboard(); 
         }
+        // Set initial bet selection for visual feedback
+        placeBet(selectedBetType); 
     }
 
     initialize();
