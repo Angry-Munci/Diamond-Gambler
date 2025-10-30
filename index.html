@@ -69,19 +69,19 @@
             color: #00ffff;
             font-weight: bold;
         }
-        /* --- ROULETTE VISUAL STYLES (Angled/Colored) --- */
+        /* --- ROULETTE VISUAL STYLES --- */
         .roulette-result-red {
-            background: linear-gradient(45deg, #ff0000, #990000); /* Angled Gradient */
+            background: linear-gradient(45deg, #ff0000, #990000); 
             color: white;
             border: 3px solid #ffaa00;
         }
         .roulette-result-black {
-            background: linear-gradient(45deg, #333333, #000000); /* Angled Gradient */
+            background: linear-gradient(45deg, #333333, #000000); 
             color: white;
             border: 3px solid #666666;
         }
         .roulette-result-green {
-            background: linear-gradient(45deg, #33ff33, #009900); /* Angled Gradient */
+            background: linear-gradient(45deg, #33ff33, #009900); 
             color: #000;
             border: 3px solid #00ffff;
         }
@@ -222,7 +222,7 @@
         // =================================================================
         //                 SUPABASE CLIENT CONFIGURATION
         // =================================================================
-
+        
         // 🥳 YOUR ACTUAL SUPABASE PROJECT CREDENTIALS 🥳
         const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y';
@@ -255,9 +255,9 @@
         const ROULETTE_COST = 500; 
         const ROULETTE_WHEEL = ['Red', 'Red', 'Black', 'Black', 'Green']; // Weighted wheel
         const ROULETTE_PAYOUTS = {
-            'Red': 2,    // 2x payout
-            'Black': 2,  // 2x payout
-            'Green': 14, // 14x payout (jackpot color)
+            'Red': 2,    
+            'Black': 2,  
+            'Green': 14, 
         };
 
         // Daily Bonus configuration
@@ -294,7 +294,7 @@
                     
                     user = newUser;
                     // NOTE: If 'Confirm email' is ON in Supabase, the user MUST check their email before proceeding.
-                    authMessage.textContent = 'Registration successful! Please check your email to confirm registration.';
+                    authMessage.textContent = 'Registration successful! If your account doesn\'t log in, please check your Supabase Auth Settings to disable email confirmation.';
                 } else {
                     authMessage.textContent = `Login failed: ${error.message}`;
                     return;
@@ -352,19 +352,24 @@
         
         supabase.auth.onAuthStateChange((event, session) => {
             if (session?.user) {
-                loadUserData();
+                // Only load data if the user just signed in or the session refreshed
+                if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                     loadUserData();
+                }
             } else if (event === 'SIGNED_OUT') {
                 handleLogout();
             }
         });
 
         async function loadUserData() {
+            // Ensure we have a user from the active session check
             const user = (await supabase.auth.getUser()).data.user;
             if (!user) {
                 updateGameUI(); 
                 return;
             }
 
+            // This is the critical query that relies on the 'Allow user to read own profile' RLS policy
             const { data: profile, error } = await supabase
                 .from('players')
                 .select('*') 
@@ -372,7 +377,7 @@
                 .single();
 
             if (error) {
-                console.error('Error fetching profile (Check RLS for SELECT on own profile!):', error);
+                console.error('Error fetching profile (Check RLS/Data Integrity):', error);
                 updateGameUI(); 
                 return;
             }
@@ -451,7 +456,7 @@
             document.getElementById('resultMessage').textContent = 'Spinning...';
             document.getElementById('slotDisplay').textContent = '✨ ✨ ✨';
 
-            // 2. Perform Spin Animation (Already fast at 300ms)
+            // 2. Perform Spin Animation 
             await new Promise(resolve => setTimeout(resolve, 300)); 
 
             const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
@@ -508,7 +513,7 @@
             document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
             rouletteDisplay.textContent = 'SPINNING...';
             
-            // 2. Perform Spin Animation (Already fast at 500ms)
+            // 2. Perform Spin Animation 
             await new Promise(resolve => setTimeout(resolve, 500)); 
             
             // 3. Determine result
@@ -576,7 +581,6 @@
                 adminMessage.textContent = `Error: ${error.message}`;
                 console.error('Admin Update Error:', error);
             } else if (error && error.code === '42501') {
-                // RLS 42501 permission denied is common when not an admin
                 adminMessage.textContent = 'Permission Denied. (Check RLS or admin status)'; 
             } else {
                 adminMessage.textContent = `Successfully set User ${targetUserId} diamonds to ${newAmount.toLocaleString()}`;
@@ -645,7 +649,7 @@
             currentDiamonds += DAILY_BONUS_AMOUNT;
             document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
             document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
-            document.getElementById('dailyBonusButton').disabled = true; // Disable until next status check
+            document.getElementById('dailyBonusButton').disabled = true; 
 
             // Send database update in background
             const { data: updatedData, error: updateError } = await supabase
@@ -664,7 +668,6 @@
                 document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
                 document.getElementById('dailyBonusMessage').textContent = 'ERROR: Failed to claim bonus. Diamonds rolled back.';
                 console.error(updateError);
-                // Re-enable button after error
                 document.getElementById('dailyBonusButton').disabled = false;
                 return;
             }
@@ -758,9 +761,21 @@
                 .subscribe();
         }
 
-        // Initialize the app on load
-        loadUserData();
-        changeGameMode('slots'); // Start on the slots page
+        // =================================================================
+        // 2. CRITICAL INITIALIZATION WRAPPER
+        // =================================================================
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Check for the client's existence to avoid ReferenceError
+            if (typeof supabase === 'undefined') {
+                console.error("Supabase client is not loaded. Check the <script> tag link in the <head>.");
+                return;
+            }
+
+            // Initialize the app after all DOM content is loaded
+            loadUserData();
+            changeGameMode('slots'); // Start on the slots page
+        });
+
     </script>
 
 </body>
