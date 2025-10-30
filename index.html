@@ -1,106 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Diamond Slots 💎</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diamond Slots Arcade</title>
 <style>
   body {
-    background: radial-gradient(circle at center, #0a0020, #000);
-    color: #fff;
-    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at center, #1a0033, #000010);
+    font-family: 'Orbitron', sans-serif;
+    color: #b5b3ff;
     text-align: center;
-    overflow: hidden;
+    overflow-x: hidden;
   }
-
   h1 {
-    font-size: 2.5em;
-    color: #00ffff;
-    text-shadow: 0 0 10px #0ff, 0 0 20px #00f0f0;
-    margin-top: 30px;
+    font-size: 3em;
+    color: #9d7bff;
+    text-shadow: 0 0 20px #6f00ff;
+    margin-top: 40px;
   }
-
-  #slot-container {
+  .machine {
+    margin: 60px auto;
+    width: 340px;
+    padding: 25px;
+    border: 3px solid #4a00ff;
+    border-radius: 25px;
+    background: rgba(30, 0, 70, 0.7);
+    box-shadow: 0 0 40px #6a00ff;
+  }
+  .reels {
     display: flex;
     justify-content: center;
-    margin: 50px auto;
-    gap: 20px;
+    gap: 15px;
   }
-
   .reel {
-    width: 100px;
-    height: 100px;
-    background: #111;
-    border: 3px solid #00ffff;
+    background: rgba(0, 0, 40, 0.8);
+    color: #00c3ff;
+    border: 2px solid #4a00ff;
     border-radius: 10px;
-    font-size: 2em;
+    width: 80px;
+    height: 80px;
+    font-size: 2.4em;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 20px #00ffff;
+    box-shadow: 0 0 20px #5500ff;
   }
-
-  button {
-    background: linear-gradient(45deg, #00ffff, #ff00ff);
-    color: #000;
-    font-size: 1.2em;
-    padding: 10px 25px;
+  .btn {
+    background: linear-gradient(90deg, #4a00ff, #9b00ff);
     border: none;
+    color: white;
+    font-size: 1.2em;
+    padding: 15px 25px;
     border-radius: 10px;
-    box-shadow: 0 0 15px #00ffff;
     cursor: pointer;
-    margin-top: 20px;
+    box-shadow: 0 0 20px #6a00ff;
     transition: 0.3s;
   }
-
-  button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px #ff00ff;
+  .btn:hover {
+    background: linear-gradient(90deg, #6a00ff, #bb00ff);
+    box-shadow: 0 0 30px #c300ff;
   }
-
-  #diamond-display {
+  .stats {
     margin-top: 20px;
-    font-size: 1.5em;
-    color: #00ffcc;
+    font-size: 1.1em;
   }
-
-  #jackpot {
-    font-size: 3em;
-    color: #ff00ff;
-    text-shadow: 0 0 30px #ff00ff, 0 0 60px #ff0088;
+  .jackpot {
+    color: #00ffea;
+    font-size: 2em;
+    text-shadow: 0 0 15px #00fff7;
+    animation: flicker 1.5s infinite;
     display: none;
-    animation: flash 1s infinite alternate;
   }
-
-  @keyframes flash {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0.5; transform: scale(1.1); }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
-
-  audio { display: none; }
 </style>
 </head>
 <body>
-  <h1>💎 Diamond Slots 💎</h1>
-  <div id="slot-container">
-    <div class="reel" id="r1">💎</div>
-    <div class="reel" id="r2">💎</div>
-    <div class="reel" id="r3">💎</div>
+
+<h1>💎 Diamond Slots 💎</h1>
+
+<div class="machine">
+  <div class="reels">
+    <div id="r1" class="reel">💎</div>
+    <div id="r2" class="reel">⭐</div>
+    <div id="r3" class="reel">💎</div>
   </div>
+  <br>
+  <button class="btn" onclick="spin()">SPIN</button>
+  <p class="stats">Diamonds: <span id="diamonds">0</span></p>
+  <p class="jackpot" id="jackpotText">🎆 JACKPOT! 🎆</p>
+</div>
 
-  <button id="spinBtn">SPIN</button>
-  <div id="diamond-display">Diamonds: <span id="diamonds">0</span></div>
-  <div id="jackpot">JACKPOT!!! 💥</div>
+<audio id="spinSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
+<audio id="jackpotSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
 
-  <audio id="spinSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_b50a1aebc0.mp3?filename=slot-machine-spin-102441.mp3"></audio>
-  <audio id="jackpotSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4c772a98f2.mp3?filename=casino-win-102443.mp3"></audio>
-
+<!-- Firebase Setup -->
 <script type="module">
-  // Firebase imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-  // Firebase config (your existing project)
   const firebaseConfig = {
     apiKey: "AIzaSyB9HCPLU-mcEGZjabMjkkcCqN9h5p6xAi4",
     authDomain: "diamond-slots-5a068.firebaseapp.com",
@@ -114,94 +114,56 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 🔹 Player system
-  async function loadOrCreatePlayer(name) {
-    const playerRef = doc(db, "players", name);
-    const snap = await getDoc(playerRef);
+  let diamonds = 0;
+  const id = localStorage.getItem('guestID') || 'guest_' + Math.floor(Math.random() * 999999);
+  localStorage.setItem('guestID', id);
+
+  async function loadPlayer() {
+    const ref = doc(db, "players", id);
+    const snap = await getDoc(ref);
     if (snap.exists()) {
-      console.log("Returning player:", name);
-      return snap.data();
+      diamonds = snap.data().diamonds;
     } else {
-      console.log("New player created:", name);
-      const newPlayer = {
-        name: name,
-        diamonds: 10000,
-        xp: 0,
-        level: 1,
-        prestige: 0,
-        powerUps: { luck: 0, speed: 0, xp: 0 },
-        createdAt: new Date().toISOString()
-      };
-      await setDoc(playerRef, newPlayer);
-      return newPlayer;
+      diamonds = 10000;
+      await setDoc(ref, { diamonds });
     }
+    document.getElementById("diamonds").textContent = diamonds;
   }
 
-  async function savePlayerData(player) {
-    const playerRef = doc(db, "players", player.name);
-    await updateDoc(playerRef, player);
-    console.log("Player saved:", player.name);
+  async function savePlayer() {
+    await setDoc(doc(db, "players", id), { diamonds });
   }
 
-  // 🎰 Game logic
-  const symbols = ["💎", "🍒", "7️⃣", "⭐", "🔔", "🍀"];
-  const reels = [document.getElementById("r1"), document.getElementById("r2"), document.getElementById("r3")];
-  const spinBtn = document.getElementById("spinBtn");
-  const diamondDisplay = document.getElementById("diamonds");
-  const jackpotBanner = document.getElementById("jackpot");
-  const spinSound = document.getElementById("spinSound");
-  const jackpotSound = document.getElementById("jackpotSound");
+  loadPlayer();
 
-  let player;
+  const symbols = ["💎", "⭐", "🍒", "7️⃣", "💰", "🔥"];
 
-  async function initGame() {
-    const playerName = prompt("Enter your player name:") || "Guest";
-    player = await loadOrCreatePlayer(playerName);
-    diamondDisplay.textContent = player.diamonds;
-  }
+  window.spin = async function() {
+    document.getElementById("spinSound").play();
+    document.getElementById("jackpotText").style.display = "none";
 
-  function playSound(sound) {
-    sound.currentTime = 0;
-    sound.play();
-  }
+    const r1 = symbols[Math.floor(Math.random() * symbols.length)];
+    const r2 = symbols[Math.floor(Math.random() * symbols.length)];
+    const r3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-  function randomSymbol() {
-    return symbols[Math.floor(Math.random() * symbols.length)];
-  }
+    document.getElementById("r1").textContent = r1;
+    document.getElementById("r2").textContent = r2;
+    document.getElementById("r3").textContent = r3;
 
-  async function spin() {
-    if (player.diamonds < 100) {
-      alert("Not enough diamonds! 💎");
-      return;
+    if (r1 === r2 && r2 === r3) {
+      const win = Math.floor(Math.random() * 5000) + 5000;
+      diamonds += win;
+      document.getElementById("jackpotSound").play();
+      document.getElementById("jackpotText").style.display = "block";
+    } else {
+      diamonds -= 100;
+      if (diamonds < 0) diamonds = 0;
     }
 
-    playSound(spinSound);
-    player.diamonds -= 100;
-
-    for (let i = 0; i < reels.length; i++) {
-      reels[i].textContent = symbols[Math.floor(Math.random() * symbols.length)];
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const results = reels.map(r => r.textContent);
-    diamondDisplay.textContent = player.diamonds;
-
-    // Jackpot if all symbols match
-    if (results[0] === results[1] && results[1] === results[2]) {
-      jackpotBanner.style.display = "block";
-      playSound(jackpotSound);
-      const reward = Math.floor(Math.random() * 5000) + 2000;
-      player.diamonds += reward;
-      setTimeout(() => (jackpotBanner.style.display = "none"), 4000);
-    }
-
-    diamondDisplay.textContent = player.diamonds;
-    await savePlayerData(player);
-  }
-
-  spinBtn.addEventListener("click", spin);
-  initGame();
+    document.getElementById("diamonds").textContent = diamonds;
+    await savePlayer();
+  };
 </script>
+
 </body>
 </html>
