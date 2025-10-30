@@ -188,9 +188,6 @@
         <input type="email" id="authEmail" placeholder="Email Address">
         <button onclick="handleMagicLinkAuth()">Send Magic Link</button>
       </div>
-      <button onclick="signInWithProvider('google')" style="background-color: #db4437;">
-        Sign in with Google
-      </button>
       <p id="authMessage" class="message-box" style="margin: 5px 0;"></p>
     </div>
         <button id="logoutButton" onclick="handleLogout()" style="display: none;">Logout</button>
@@ -202,13 +199,10 @@
     <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
       <button onclick="changeGameMode('slots')" id="slotsButton">🎰 Slots</button>
       <button onclick="changeGameMode('roulette')" id="rouletteButton">🔴 Roulette</button>
-      <button id="dailyBonusButton" onclick="claimDailyBonus()">Daily Bonus</button>
-      <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
+            <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
     </div>
 
-    <p id="dailyBonusMessage" class="message-box"></p>
-
-    <div id="slotsMode">
+        <div id="slotsMode">
       <h2>Diamond Slots ($<span id="slotsCostDisplay">100</span> per spin)</h2>
       <button id="startGameButton" onclick="startGame()">Start Slot Spin</button>
       <div class="game-display" id="slotDisplay">-- -- --</div>
@@ -265,7 +259,7 @@
     const ROULETTE_COST = 500;
     const ROULETTE_WHEEL = ['Red','Red','Black','Black','Green'];
     const ROULETTE_PAYOUTS = {'Red':2,'Black':2,'Green':14};
-    const DAILY_BONUS_AMOUNT = 500;
+    // ❌ Removed DAILY_BONUS_AMOUNT
 
     // ✅ Helper: fade out loading
     function hideLoading() {
@@ -290,7 +284,7 @@
       document.getElementById('slotsCostDisplay').textContent = COST_PER_SPIN;
       document.getElementById('rouletteCostDisplay').textContent = ROULETTE_COST;
 
-      // 🚀 NEW: AUTH STATE LISTENER (Crucial for Magic Link/OAuth)
+      // 🚀 AUTH STATE LISTENER (Crucial for Magic Link)
       supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session?.user) {
           loadUserData();
@@ -298,8 +292,7 @@
           handleLogout();
         }
       });
-      // --------------------------------------------------------
-
+      
       // Check existing session (instant)
       const { data: session } = await supabaseClient.auth.getSession();
       if (session?.session?.user) {
@@ -310,22 +303,22 @@
       changeGameMode('slots');
     });
 
-    // 🚀 NEW: Magic Link Login Function
+    // ✅ Magic Link Login Function
     async function handleMagicLinkAuth() {
       const email = document.getElementById('authEmail').value;
       const msg = document.getElementById('authMessage');
-      
+      
       if (!email) {
         msg.textContent = 'Please enter your email.';
         return;
       }
 
       msg.textContent = 'Sending magic link...';
-      
-      const { error } = await supabaseClient.auth.signInWithOtp({ 
+      
+      const { error } = await supabaseClient.auth.signInWithOtp({ 
         email: email,
         options: {
-          emailRedirectTo: window.location.origin 
+          emailRedirectTo: window.location.origin 
         }
       });
 
@@ -333,69 +326,55 @@
         msg.textContent = `Error: ${error.message}`;
       } else {
         msg.textContent = '✅ Magic Link sent! Check your email to log in.';
-        // You might want to disable the inputs/buttons here
+        // Disable inputs/buttons until user clicks the link
+        document.getElementById('authEmail').disabled = true;
+        document.querySelector('#authContainer button').disabled = true;
       }
     }
-
-    // 🚀 NEW: Social Sign-In Function
-    async function signInWithProvider(providerName) {
-      const msg = document.getElementById('authMessage');
-      msg.textContent = `Redirecting to ${providerName}...`;
-
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: providerName, // e.g., 'google', 'github', 'discord'
-        options: {
-          redirectTo: window.location.origin 
-        }
-      });
-
-      if (error) {
-        msg.textContent = `Authentication error: ${error.message}`;
-      }
-    }
-    // --------------------------------------------------------
 
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       currentUserID = null;
       currentDiamonds = 0;
       document.getElementById('gameAreaContainer').style.display = 'none';
-      document.getElementById('authContainer').style.display = 'flex'; // Use flex now
+      document.getElementById('authContainer').style.display = 'flex'; 
       document.getElementById('logoutButton').style.display = 'none';
       document.getElementById('diamondCount').textContent = 0;
       document.getElementById('welcomeMessage').textContent = 'Guest';
-      document.getElementById('authMessage').textContent = ''; // Clear auth message
+      document.getElementById('authMessage').textContent = ''; 
     }
 
     async function loadUserData() {
       const { data: userData } = await supabaseClient.auth.getUser();
       if (!userData.user) return;
-      
+      
       // ⚙️ Supabase Profile Check/Creation
+      // ❌ Removed 'last_daily_claim' from the select statement
       let { data: profile } = await supabaseClient
         .from('players')
-        .select('id, username, diamonds, is_admin, last_daily_claim')
+        .select('id, username, diamonds, is_admin')
         .eq('id', userData.user.id)
         .single();
 
       if (!profile) {
-        // 🆕 Create a new profile for the user if it doesn't exist (important for social/magic link sign-ups)
+        // 🆕 Create a new profile for the user if it doesn't exist (important for sign-ups)
         const defaultUsername = userData.user.email ? userData.user.email.split('@')[0] : 'Player-' + Math.floor(Math.random()*1000);
+        // ❌ Removed 'last_daily_claim' from the insert and select statements
         const { data: newProfile } = await supabaseClient
           .from('players')
           .insert([{ id: userData.user.id, username: defaultUsername, diamonds: 5000 }]) // Give starting diamonds
-          .select('id, username, diamonds, is_admin, last_daily_claim')
+          .select('id, username, diamonds, is_admin')
           .single();
         profile = newProfile;
       }
-          
+          
       if (!profile) return;
-      
+      
       currentUserID = profile.id;
       currentUsername = profile.username;
       currentDiamonds = profile.diamonds;
       isUserAdmin = profile.is_admin;
-      
+      
       document.getElementById('diamondCount').textContent = currentDiamonds;
       document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
       document.getElementById('authContainer').style.display = 'none';
@@ -407,7 +386,7 @@
       }
     }
 
-    // --- Game Logic (Unchanged) ---
+    // --- Game Logic ---
 
     function changeGameMode(mode) {
       document.getElementById('slotsMode').style.display = (mode === 'slots') ? 'block' : 'none';
@@ -429,12 +408,12 @@
       }
       currentDiamonds -= COST_PER_SPIN;
       document.getElementById('diamondCount').textContent = currentDiamonds;
-      
+      
       // Spinning animation (simplified)
       const spinInterval = setInterval(() => {
         document.getElementById('slotDisplay').textContent = `${getRandomSymbol()} ${getRandomSymbol()} ${getRandomSymbol()}`;
       }, 100);
-      
+      
       document.getElementById('startGameButton').disabled = true;
 
       setTimeout(async () => {
@@ -446,7 +425,7 @@
         document.getElementById('resultMessage').textContent = win > 0 ? `You won ${win} diamonds!` : 'Try again!';
         document.getElementById('diamondCount').textContent = currentDiamonds;
         document.getElementById('startGameButton').disabled = false;
-        
+        
         // Update DB
         const { error } = await supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
         if (error) console.error("Database update error:", error);
@@ -460,7 +439,7 @@
       }
       currentDiamonds -= ROULETTE_COST;
       document.getElementById('diamondCount').textContent = currentDiamonds;
-      
+      
       // Disable buttons during spin
       document.querySelectorAll('#rouletteMode button').forEach(btn => btn.disabled = true);
 
@@ -469,7 +448,7 @@
         document.getElementById('rouletteDisplay').textContent = randomColor;
         document.getElementById('rouletteDisplay').className = `game-display roulette-result-${randomColor.toLowerCase()}`;
       }, 100);
-      
+      
       setTimeout(async () => {
         clearInterval(spinInterval);
         const color = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
@@ -477,54 +456,34 @@
         const winnings = ROULETTE_COST * mult;
 
         if (mult > 0) currentDiamonds += winnings;
-        
+        
         document.getElementById('rouletteDisplay').textContent = color;
         document.getElementById('rouletteDisplay').className = `game-display roulette-result-${color.toLowerCase()}`;
         document.getElementById('rouletteResultMessage').textContent = winnings > 0 ? `WIN! You won ${winnings} diamonds!` : 'You lost!';
         document.getElementById('diamondCount').textContent = currentDiamonds;
-        
+        
         // Re-enable buttons
         document.querySelectorAll('#rouletteMode button').forEach(btn => btn.disabled = false);
-        
+        
         // Update DB
         const { error } = await supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
         if (error) console.error("Database update error:", error);
       }, 3000); // Spin for 3 seconds
     }
 
-    // --- Daily Bonus (Placeholder - requires 'last_daily_claim' column in Supabase 'players' table) ---
-    async function claimDailyBonus() {
-      const { data: profile } = await supabaseClient.from('players').select('last_daily_claim').eq('id', currentUserID).single();
-      
-      if (profile) {
-        const lastClaim = new Date(profile.last_daily_claim);
-        const now = new Date();
-        const oneDay = 24 * 60 * 60 * 1000;
-        
-        if (now - lastClaim > oneDay) {
-          currentDiamonds += DAILY_BONUS_AMOUNT;
-          document.getElementById('diamondCount').textContent = currentDiamonds;
-          document.getElementById('dailyBonusMessage').textContent = `🎉 Daily Bonus claimed! +${DAILY_BONUS_AMOUNT} diamonds!`;
-          await supabaseClient.from('players').update({ diamonds: currentDiamonds, last_daily_claim: now.toISOString() }).eq('id', currentUserID);
-        } else {
-          const nextClaimTime = new Date(lastClaim.getTime() + oneDay);
-          const hoursLeft = Math.ceil((nextClaimTime - now) / (60 * 60 * 1000));
-          document.getElementById('dailyBonusMessage').textContent = `⏳ Already claimed. Try again in ${hoursLeft} hours.`;
-        }
-      }
-    }
+    // ❌ REMOVED: Daily Bonus Claim Function
 
-    // --- Leaderboard Logic (Placeholder) ---
+    // --- Leaderboard Logic ---
     async function openLeaderboardModal() {
       const { data: players, error } = await supabaseClient
         .from('players')
         .select('username, diamonds')
         .order('diamonds', { ascending: false })
         .limit(10);
-      
+      
       const body = document.getElementById('leaderboardBody');
       body.innerHTML = '';
-      
+      
       if (players) {
         players.forEach((p, index) => {
           const row = body.insertRow();
@@ -534,10 +493,10 @@
           if (p.username === currentUsername) row.style.fontWeight = 'bold'; // Highlight current user
         });
       }
-      
+      
       document.getElementById('leaderboardModal').style.display = 'block';
     }
-    
+    
     function closeModal(id) {
       document.getElementById(id).style.display = 'none';
     }
