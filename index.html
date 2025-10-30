@@ -262,7 +262,12 @@
         <div class="auth-status">
             <p id="userNameDisplay">Guest</p>
             <p id="authStatus">Please log in to start.</p>
-            <button onclick="login()">Log In / Start Game</button>
+            
+            <div id="authContainer" style="display: block; margin-bottom: 5px;">
+                <input type="email" id="authEmail" placeholder="Email" style="padding: 5px; width: 150px; margin-bottom: 5px;">
+                <input type="password" id="authPassword" placeholder="Password" style="padding: 5px; width: 150px; margin-bottom: 5px;">
+                <button onclick="handleAuth()">Login / Register</button>
+            </div>
             <button onclick="openStore()">Power-Up Store</button>
             <button onclick="checkDailyBonus()">Daily Bonus</button>
             <button onclick="openLeaderboard()">🏆 Leaderboard</button>
@@ -390,7 +395,7 @@
 
         // --- GLOBAL VARIABLES ---
         let diamonds = 0;
-        let currentUserId = null;
+        let currentUserId = null; // This will now store the Supabase UUID
         let userName = "Guest";
         let isSpinning = false;
         let selectedGame = 'slots';
@@ -401,35 +406,56 @@
         const symbols = ['🍒', '🍋', '🔔', 'BAR', '7️⃣', '💎'];
         const jackpotSymbols = ['7️⃣', '💎']; 
 
-        // --- AUTH & DATA MANAGEMENT ---
+        // --- AUTH & DATA MANAGEMENT (UPDATED LOGIC) ---
+        
+        // STEP 2 CHANGE: NEW AUTH HANDLER
+        async function handleAuth() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            if (!email || !password) return alert('Please enter both email and password.');
 
-        async function login() {
-            // Simple user ID generation/retrieval (still uses localStorage for UID persistence)
-            let uid = localStorage.getItem('lastUserId');
-            if (!uid) {
-                uid = `user_${Date.now()}`;
-                localStorage.setItem('lastUserId', uid);
-                userName = `Player ${Math.floor(Math.random() * 100000)}`;
-                localStorage.setItem(`userName_${uid}`, userName);
-            } else {
-                userName = localStorage.getItem(`userName_${uid}`) || `Player ${uid.split('_')[1]}`;
+            // 1. Try to sign in
+            let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error && error.message.includes('Invalid login credentials')) {
+                // 2. If sign in fails, try to sign up
+                showMessageBox("Attempting to register new user...");
+                ({ data, error } = await supabase.auth.signUp({ email, password }));
             }
-            currentUserId = uid;
-            document.getElementById('userNameDisplay').textContent = userName;
-            document.getElementById('authStatus').textContent = `Logged in as ${userName}`;
 
-            await initialize();
+            if (error) {
+                alert(`Authentication Error: ${error.message}`);
+                return;
+            }
+
+            // 3. Success: Initialize the game session with the user's UUID
+            await initializeGameSession(data.user.id, email);
         }
 
+        async function initializeGameSession(authId, userEmail) {
+            // Set global variables based on Supabase Auth ID (the UUID)
+            currentUserId = authId; 
+            // Use the email prefix as a default username for the game logic
+            userName = userEmail.split('@')[0]; 
+            
+            document.getElementById('userNameDisplay').textContent = userName;
+            document.getElementById('authStatus').textContent = `Logged in as ${userEmail}`;
+            document.getElementById('authContainer').style.display = 'none'; // Hide auth fields
+
+            // Now call the main game initializer
+            await initialize();
+        }
+        // END STEP 2 CHANGE
+
+        // Initialize function remains similar, but relies on currentUserId being the UUID
         async function initialize() {
             if (!currentUserId) return;
 
-            // 1. Try to load data from Supabase
-            // NOTE: Using 'players' table name to match your Supabase setup
+            // 1. Try to load data from Supabase using the user's UUID
             const { data: userData, error } = await supabase
                 .from('players') 
                 .select('*')
-                .eq('user_id', currentUserId)
+                .eq('user_id', currentUserId) // Uses the real Supabase UUID
                 .single();
 
             if (userData) {
@@ -478,7 +504,7 @@
             if (!currentUserId) return;
             
             const dataToSave = {
-                user_id: currentUserId,
+                user_id: currentUserId, // UUID
                 username: userName,
                 diamonds: diamonds,
                 player_stats_json: playerStats,
@@ -494,10 +520,11 @@
             }
         }
         
-        document.addEventListener('DOMContentLoaded', login);
+        // STEP 2 CHANGE: Changed auto-login to just run updateDisplay
+        document.addEventListener('DOMContentLoaded', updateDisplay);
 
 
-        // --- UI & DISPLAY FUNCTIONS ---
+        // --- UI & DISPLAY FUNCTIONS (Rest of the functions remain the same) ---
 
         function updateDisplay() {
             document.getElementById('diamondBalance').innerHTML = `<span class="diamond">💎</span> ${diamonds.toLocaleString()}`;
@@ -565,7 +592,7 @@
             document.querySelector(`.tab-button[onclick*="'${game}'"]`).classList.add('active');
         }
 
-        // --- POWER-UP STORE LOGIC ---
+        // --- POWER-UP STORE LOGIC (Remaining functions stay the same) ---
 
         function openStore() {
             if (!currentUserId) return showMessageBox("Please log in first!");
@@ -638,7 +665,7 @@
             openStore(); 
         }
 
-        // --- SLOTS GAME LOGIC (spin function modified for T2/T3) ---
+        // --- SLOTS GAME LOGIC (Rest of the functions stay the same) ---
 
         async function spin() {
             if (!currentUserId) return showMessageBox("Please log in first!");
@@ -780,7 +807,7 @@
             }
         }
 
-        // --- ROULETTE GAME LOGIC ---
+        // --- ROULETTE GAME LOGIC (Rest of the functions stay the same) ---
         const ROULETTE_NUMBERS = [
             { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' }, 
             // ... (rest of 36 numbers) ...
@@ -922,7 +949,7 @@
             savePlayerData();
         }
 
-        // --- DAILY BONUS LOGIC ---
+        // --- DAILY BONUS LOGIC (Rest of the functions stay the same) ---
 
         function openDailyBonus() {
             document.getElementById('dailyBonusModal').style.display = 'block';
@@ -967,7 +994,7 @@
             savePlayerData();
         }
 
-        // --- LEADERBOARD LOGIC ---
+        // --- LEADERBOARD LOGIC (Rest of the functions stay the same) ---
 
         function openLeaderboard() {
             document.getElementById('leaderboardModal').style.display = 'block';
