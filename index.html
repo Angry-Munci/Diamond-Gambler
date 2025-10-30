@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Slots</title>
+    <title>Diamond Casino</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -15,168 +15,60 @@
             margin: 0;
             min-height: 100vh;
         }
-
-        h1 {
-            color: #00eaff;
-            text-shadow: 0 0 10px #00eaff;
-            font-size: 3em;
-            margin-bottom: 5px;
-        }
-
-        .diamond {
-            color: #00eaff;
-            font-size: 1.2em;
-        }
-
-        /* --- Header & Status --- */
         .header {
+            background-color: #2a0c5c;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
         }
-
-        .balance, .auth-status {
-            text-align: left;
+        .diamond-icon {
+            font-size: 24px;
+            color: #00ffff;
+            margin-right: 8px;
         }
-
-        .auth-status button, .game-area button, .modal button {
-            background-color: #8f4aff;
+        .main-title {
+            font-size: 48px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        }
+        button {
+            background-color: #7b28c0;
             color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin: 5px;
-        }
-
-        .auth-status button:hover, .game-area button:hover, .modal button:hover {
-            background-color: #a766ff;
-        }
-
-        #luckStatus {
-            font-size: 0.8em;
-            color: #ffcc00;
-            margin-top: 5px;
-        }
-
-        /* --- Game Area --- */
-        .game-area {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .tab-button {
             padding: 10px 20px;
-            margin: 0 5px;
-            background-color: #2c0f5f;
-            border: 2px solid #8f4aff;
-            color: white;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 8px 8px 0 0;
+            margin: 5px;
+            transition: background-color 0.2s, transform 0.1s;
         }
-
-        .tab-button.active {
-            background-color: #8f4aff;
-            border-bottom-color: #8f4aff;
+        button:hover:not(:disabled) {
+            background-color: #9c4ddf;
+            transform: translateY(-1px);
         }
-
-        .game-content {
-            border: 2px solid #8f4aff;
-            padding: 20px;
-            border-radius: 0 0 15px 15px;
-            background-color: #1a0833;
+        button:disabled {
+            background-color: #3f226b;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
-
-        /* --- Slots Specifics --- */
-        .slots-machine {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .reel {
-            width: 80px;
-            height: 100px;
+        .game-display {
+            font-size: 60px;
+            margin: 20px 0;
             background: #000;
-            border: 3px solid #ffcc00;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4em;
-            overflow: hidden;
-            position: relative;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            letter-spacing: 10px;
+            min-height: 80px;
         }
-
-        .symbol {
-            position: absolute;
-            transition: transform 0.1s ease-out;
+        .message-box {
+            margin-top: 10px;
+            color: #00ffff;
+            font-weight: bold;
         }
-
-        .spin-controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            align-items: center;
-        }
-
-        /* --- Roulette Specifics --- */
-        .roulette-wheel {
-            width: 200px;
-            height: 200px;
-            background: #333;
-            border-radius: 50%;
-            margin: 20px auto;
-            position: relative;
-            border: 10px solid #8f4aff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3em;
-        }
-
-        .roulette-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .bet-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            width: 300px;
-            margin-top: 15px;
-        }
-
-        .bet-options button {
-            padding: 10px;
-            font-size: 1em;
-            border: 2px solid #8f4aff;
-            background-color: #2c0f5f;
-        }
-        
-        .bet-options .red { background-color: #9a0000; border-color: #ff3333; }
-        .bet-options .black { background-color: #111; border-color: #555; }
-        .bet-options .green { background-color: #005a00; border-color: #00ff00; }
-        .bet-options .active-bet { border-width: 4px; box-shadow: 0 0 10px yellow; }
-
-
-        /* --- Modals (Shared Styles) --- */
         .modal {
             display: none;
             position: fixed;
@@ -186,863 +78,637 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0,0,0,0.7);
         }
-
         .modal-content {
-            background-color: #1f084a;
+            background-color: #2a0c5c;
             margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #8f4aff;
-            width: 90%;
-            max-width: 800px;
+            padding: 30px;
+            border: 2px solid #00ffff;
+            width: 80%;
+            max-width: 600px;
             border-radius: 10px;
+            position: relative;
         }
-
-        .close-btn {
-            color: #aaa;
+        .close {
+            color: #fff;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
         }
-
-        .close-btn:hover, .close-btn:focus {
-            color: #fff;
+        .close:hover,
+        .close:focus {
+            color: #ccc;
             text-decoration: none;
             cursor: pointer;
         }
-
-        /* --- Store Specifics --- */
-        .item-card {
-            background: #2c0f5f;
-            border: 1px solid #4a4a70;
-            padding: 15px;
-            margin-bottom: 10px;
+        .admin-panel {
+            background: #333;
+            padding: 20px;
+            margin-top: 20px;
             border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             text-align: left;
         }
-
-        .item-card h4 {
-            margin-top: 0;
-            color: #00eaff;
+        .admin-panel input, .admin-panel button {
+            margin-right: 10px;
+            padding: 8px;
         }
-
-        .item-card p {
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-
-        /* --- Leaderboard Specifics --- */
-        #leaderboardContent table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        #leaderboardContent th, #leaderboardContent td {
-            padding: 10px;
-            border: 1px solid #4a4a70;
-            text-align: left;
-        }
-        #leaderboardContent th {
-            background-color: #8f4aff;
-            color: white;
+        .auth-container input {
+            padding: 8px;
+            margin-right: 5px;
+            width: 180px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="balance">
-            <h2 id="diamondBalance"><span class="diamond">💎</span> 0</h2>
-            <p id="luckStatus">(No Active Buffs)</p>
-        </div>
-        <div class="auth-status">
-            <p id="userNameDisplay">Guest</p>
-            <p id="authStatus">Please log in to start.</p>
-            
-            <div id="authContainer" style="display: block; margin-bottom: 5px;">
-                <input type="email" id="authEmail" placeholder="Email" style="padding: 5px; width: 150px; margin-bottom: 5px;">
-                <input type="password" id="authPassword" placeholder="Password" style="padding: 5px; width: 150px; margin-bottom: 5px;">
-                <button onclick="handleAuth()">Login / Register</button>
+        <div id="userInfo">
+            <div style="font-size: 20px; font-weight: bold;">
+                <span class="diamond-icon">💎</span> Diamonds: <span id="diamondCount">0</span>
             </div>
-            <button onclick="openStore()">Power-Up Store</button>
-            <button onclick="checkDailyBonus()">Daily Bonus</button>
-            <button onclick="openLeaderboard()">🏆 Leaderboard</button>
+            <div id="welcomeMessage" style="font-size: 16px; margin-top: 5px;">Guest</div>
         </div>
+        
+        <div id="authContainer" class="auth-container">
+            <input type="email" id="authEmail" placeholder="Email">
+            <input type="password" id="authPassword" placeholder="Password">
+            <button onclick="handleAuth()">Login / Register</button>
+            <p id="authMessage" class="message-box" style="margin: 5px 0;"></p>
+        </div>
+
+        <button id="logoutButton" onclick="handleLogout()" style="display: none;">Logout</button>
     </div>
 
-    <div class="game-area" id="gameAreaContainer" style="display: none;">
-        <h1><span class="diamond">💎</span> Diamond Slots <span class="diamond">💎</span></h1>
-
-        <div class="tabs">
-            <button class="tab-button active" onclick="changeGame('slots')">🎰 Slots</button>
-            <button class="tab-button" onclick="changeGame('roulette')">🔴 Roulette</button>
+    <div id="gameAreaContainer" style="display: none;">
+        <h1 class="main-title">DIAMOND CASINO</h1>
+        
+        <div class="flex" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+            <button onclick="changeGameMode('slots')" id="slotsButton">🎰 Slots</button>
+            <button onclick="changeGameMode('roulette')" id="rouletteButton">🔴 Roulette</button>
+            <button id="dailyBonusButton" onclick="claimDailyBonus()">Daily Bonus</button>
+            <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
+        </div>
+        <p id="dailyBonusMessage" class="message-box"></p>
+        
+        <div id="slotsMode" style="display: block;">
+            <h2>Diamond Slots ($<span id="slotsCostDisplay">100</span> per spin)</h2>
+            <button id="startGameButton" onclick="startGame()">Start Slot Spin</button>
+            <div class="game-display" id="slotDisplay">-- -- --</div>
+            <p id="resultMessage" class="message-box">Click Start Slot Spin!</p>
         </div>
 
-        <div id="slots" class="game-content">
-            <div class="slots-machine">
-                <div class="reel" id="reel1">7️⃣</div>
-                <div class="reel" id="reel2">7️⃣</div>
-                <div class="reel" id="reel3">7️⃣</div>
-                <div class="reel" id="reel4">7️⃣</div>
-                <div class="reel" id="reel5">7️⃣</div>
+        <div id="rouletteMode" style="display: none;">
+            <h2>Roulette ($<span id="rouletteCostDisplay">500</span> per spin)</h2>
+            <div style="margin-bottom: 10px;">
+                <button onclick="startRoulette('Red')" style="background-color: #ff3333;">Bet Red (2x)</button>
+                <button onclick="startRoulette('Black')" style="background-color: #333333;">Bet Black (2x)</button>
+                <button onclick="startRoulette('Green')" style="background-color: #33ff33;">Bet Green (14x)</button>
             </div>
-            <p id="slotsResult" style="color:#00eaff; font-weight: bold;">Set your bet and pull the lever!</p>
-            <div class="spin-controls">
-                <input type="number" id="slotsBetAmount" value="100000" min="100" step="100000" style="padding: 10px; width: 150px;">
-                <button id="spinButton" onclick="spin()">PULL LEVER!</button>
-            </div>
+            <div class="game-display" id="rouletteDisplay">Spin the Wheel!</div>
+            <p id="rouletteResultMessage" class="message-box">Pick your color to place a bet!</p>
         </div>
 
-        <div id="roulette" class="game-content" style="display: none;">
-            <p>Welcome to the Roulette Wheel!</p>
-            <div class="roulette-wheel" id="rouletteWheel">0</div>
-            <p id="rouletteResult" style="color:#00eaff; font-weight: bold;">Place your bet!</p>
-            
-            <div class="roulette-controls">
-                <input type="number" id="rouletteBetAmount" value="100000" min="100" step="100000" style="padding: 10px; width: 150px; margin-bottom: 15px;">
-                <div class="bet-options">
-                    <button class="red" onclick="selectRouletteBet('red')">RED (2x)</button>
-                    <button class="green" onclick="selectRouletteBet('green')">GREEN (35x)</button>
-                    <button class="black" onclick="selectRouletteBet('black')">BLACK (2x)</button>
-                    <button onclick="selectRouletteBet('odd')">ODD (2x)</button>
-                    <button onclick="selectRouletteBet('zero')">ZERO (35x)</button>
-                    <button onclick="selectRouletteBet('even')">EVEN (2x)</button>
-                </div>
-                <button id="rouletteSpinButton" onclick="spinRoulette()" style="margin-top: 20px;">SPIN THE WHEEL!</button>
-            </div>
-        </div>
-    </div>
-    <div id="storeModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeStore()">&times;</span>
-            <h2><span class="diamond">💎</span> Power-Up Store</h2>
-            <div id="storeContent">
-    
-                <h3 style="color:#00eaff; width:100%; border-bottom: 2px solid #00eaff; padding-bottom: 5px;">⭐ TIER 1: Utility & Minor Boosts (Start at 1M 💎)</h3>
-                
-                <div class="item-card"><div><h4>✨ T1: Luck Boost (2x Chance)</h4><p>Doubles the chance of rolling '💎' or '7️⃣' (Single Use).</p></div><div><p>Cost: 1,500,000 💎</p><button onclick="buyPowerUp('luckBoost', 1500000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>💰 T1: Jackpot Insurance (10% Refund)</h4><p>If you lose a slot spin, gain 10% of your bet back (Single Use).</p></div><div><p>Cost: 2,000,000 💎</p><button onclick="buyPowerUp('insurance', 2000000)">Buy</button></div></div>
-                
-                <div class="item-card"><div><h4>🔥 T1: Free Spin (x1)</h4><p>Get one free spin on the Roulette wheel!</p></div><div><p>Cost: 1,200,000 💎</p><button onclick="buyPowerUp('freeSpin', 1200000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🛡️ T1: Green Sector Shield</h4><p>If 0 (Green) is the result, your 2x bet is refunded (Single Use).</p></div><div><p>Cost: 1,750,000 💎</p><button onclick="buyPowerUp('greenShield', 1750000)">Buy</button></div></div>
-                
-                <div class="item-card"><div><h4>🎁 T1: Daily Diamond Bonus (x2)</h4><p>Doubles the next daily bonus you collect (Single Use).</p></div><div><p>Cost: 1,500,000 💎</p><button onclick="buyPowerUp('dailyBonus', 1500000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>⬆️ T1: Leaderboard Stealth</h4><p>Hides your diamond gains from the live leaderboard for 1 hour (Visual Only).</p></div><div><p>Cost: 1,000,000 💎</p><button onclick="buyPowerUp('stealth', 1000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🧪 T1: Potion of Riches (+500 💎)</h4><p>Instantly gain 500 Diamonds. (Hilariously inefficient now)</p></div><div><p>Cost: 3,000,000 💎</p><button onclick="buyPowerUp('potion', 3000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🔊 T1: Sound Control Toggle</h4><p>Mutes all game sounds (Free - Utility only).</p></div><div><p>Cost: 0 💎</p><button onclick="buyPowerUp('muteToggle', 0)">Toggle</button></div></div>
-                <div class="item-card"><div><h4>🔄 T1: UI Refresh Token</h4><p>Refreshes the game state without logging out.</p></div><div><p>Cost: 1,050,000 💎</p><button onclick="buyPowerUp('uiRefresh', 1050000)">Use</button></div></div>
-                <div class="item-card"><div><h4>🩹 T1: Roulette Bet Undo</h4><p>Allows you to change your selected Roulette bet right before spinning (Single Use).</p></div><div><p>Cost: 1,250,000 💎</p><button onclick="buyPowerUp('betUndo', 1250000)">Buy</button></div></div>
-
-                <h3 style="color:#ffcc00; width:100%; border-bottom: 2px solid #ffcc00; padding-bottom: 5px; margin-top:20px;">⭐⭐ TIER 2: Major Buffs & Multi-Use (Start at 4M 💎)</h3>
-
-                <div class="item-card"><div><h4>⚡ T2: Mega Spin Multiplier (5 Spins)</h4><p>Multiplies all non-jackpot Slot winnings by **1.5x** for 5 spins.</p></div><div><p>Cost: 4,000,000 💎</p><button onclick="buyPowerUp('megaSpin', 4000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🍒 T2: Reel Freeze (x3 Uses)</h4><p>The first reel is guaranteed to stop on a jackpot symbol for **3 spins**.</p></div><div><p>Cost: 7,000,000 💎</p><button onclick="buyPowerUp('reelFreezeT2', 7000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🔄 T2: Re-Spin Token (x2 Uses)</h4><p>Provides **two** tokens to instantly spin again for free after a loss.</p></div><div><p>Cost: 3,500,000 💎</p><button onclick="buyPowerUp('respinT2', 3500000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>⭐ T2: Wild Reel Chance (2 Spins)</h4><p>On your next two spins, any reel has a small chance to turn fully WILD (all 💎).</p></div><div><p>Cost: 8,000,000 💎</p><button onclick="buyPowerUp('wildReel', 8000000)">Buy</button></div></div>
-
-                <div class="item-card"><div><h4>🎲 T2: Odd/Even Buffer (5 Spins)</h4><p>If you lose an Odd/Even bet, you get **50%** of your bet back for 5 spins.</p></div><div><p>Cost: 4,500,000 💎</p><button onclick="buyPowerUp('oddEvenBuffer', 4500000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🎯 T2: Pointer Focus (x2 Uses)</h4><p>Boosts Red/Black chance by 50% for **two** spins.</p></div><div><p>Cost: 9,000,000 💎</p><button onclick="buyPowerUp('pointerFocusT2', 9000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🔁 T2: Double Up Token (x2 Uses)</h4><p>Doubles winnings on your next **two** successful 2x bets.</p></div><div><p>Cost: 12,000,000 💎</p><button onclick="buyPowerUp('doubleUpT2', 12000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🔴 T2: Column Guard (2 Spins)</h4><p>Safeguards against losing all bets in one column (12 numbers) for 2 spins.</p></div><div><p>Cost: 6,000,000 💎</p><button onclick="buyPowerUp('columnGuard', 6000000)">Buy</button></div></div>
-
-                <h3 style="color:#8f4aff; width:100%; border-bottom: 2px solid #8f4aff; padding-bottom: 5px; margin-top:20px;">⭐⭐⭐ TIER 3: Legendary & High-Roller (Start at 10M 💎)</h3>
-
-                <div class="item-card"><div><h4>🔥 T3: God Spin Token</h4><p>Guarantees a 4-of-a-kind on a jackpot symbol (💎 or 7️⃣).</p></div><div><p>Cost: 16,000,000 💎</p><button onclick="buyPowerUp('godSpin', 16000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>👑 T3: Jackpot Multiplier (x2)</h4><p>Doubles the next **Jackpot** payout (5-of-a-kind) you hit!</p></div><div><p>Cost: 20,000,000 💎</p><button onclick="buyPowerUp('jackpotMultiplier', 20000000)">Buy</button></div></div>
-
-                <div class="item-card"><div><h4>🌈 T3: The Alchemist's Bet</h4><p>If you bet on any Red/Black/Odd/Even, this guarantees a 3x payout instead of 2x.</p></div><div><p>Cost: 15,000,000 💎</p><button onclick="buyPowerUp('alchemistBet', 15000000)">Buy</button></div></div>
-                <div class="item-card"><div><h4>🟢 T3: Zero Insurance</h4><p>Allows you to bet directly on **Zero (0)** and still get a full refund if you lose your 2x bets.</p></div><div><p>Cost: 10,000,000 💎</p><button onclick="buyPowerUp('zeroInsurance', 10000000)">Buy</button></div></div>
-
-                <div class="item-card"><div><h4>♾️ T3: Infinity Potion</h4><p>Sets your Diamond balance to **500,000,000** instantly. (Limited one-time purchase).</p></div><div><p>Cost: 50,000,000 💎</p><button id="buyInfinityPotion" onclick="buyPowerUp('infinityPotion', 50000000)">Buy</button></div></div>
-
-            </div>
-        </div>
-    </div>
-
-    <div id="dailyBonusModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <span class="close-btn" onclick="closeDailyBonus()">&times;</span>
-            <h2>🎁 Daily Diamond Bonus</h2>
-            <p id="dailyBonusMessage">Come back tomorrow!</p>
-            <button id="collectBonusButton" onclick="collectDailyBonus()" style="display:none;">Collect Bonus</button>
+        <div id="adminPanelContainer" class="admin-panel" style="display: none;">
+            <h3>Admin Panel</h3>
+            <p>Use the **UUID** from the Supabase Table Editor.</p>
+            <input type="text" id="targetUserId" placeholder="Target User ID (UUID)" style="width: 300px;">
+            <input type="number" id="newDiamondAmount" placeholder="New Diamond Amount">
+            <button onclick="updateUserDiamonds()">Set Diamonds</button>
+            <p id="adminMessage" style="color: yellow;"></p>
         </div>
     </div>
     
     <div id="leaderboardModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close-btn" onclick="closeLeaderboard()">&times;</span>
-            <h2>🏆 Live Diamond Leaderboard</h2>
-            <div id="leaderboardContent">
-                <p>Loading scores...</p>
-            </div>
-            <p style="font-size: 0.9em; color: #777;">*Scores may be slightly delayed. **Stealth buffs** are active.</p>
+        <div class="modal-content">
+            <span onclick="closeModal('leaderboardModal')" class="close">&times;</span>
+            <h2>🏆 Live Leaderboard</h2>
+            <table id="leaderboardTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Rank</th>
+                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Username</th>
+                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Diamonds</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    </tbody>
+            </table>
+            <p style="color: yellow; margin-top: 20px;">*Data updates live using Supabase Realtime!*</p>
         </div>
     </div>
 
     <script>
-        // --- SUPABASE CLIENT CONFIGURATION (KEYS INSERTED) ---
-        const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y'; 
+        // =================================================================
+        //                 SUPABASE CLIENT CONFIGURATION
+        // =================================================================
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // ---------------------------------------------------
-
-
-        // --- GLOBAL VARIABLES ---
-        let diamonds = 0;
-        let currentUserId = null; // This will now store the Supabase UUID
-        let userName = "Guest";
-        let isSpinning = false;
-        let selectedGame = 'slots';
-        let selectedBetType = null;
-        let playerStats = {}; 
-
-        const SLOTS_COUNT = 5;
-        const symbols = ['🍒', '🍋', '🔔', 'BAR', '7️⃣', '💎'];
-        const jackpotSymbols = ['7️⃣', '💎']; 
-
-        // --- AUTH & DATA MANAGEMENT (UPDATED LOGIC) ---
+        // ⚠️ REPLACE THESE WITH YOUR ACTUAL SUPABASE PROJECT CREDENTIALS ⚠️
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
+        // Initialize the client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // =================================================================
+        //                          GLOBAL STATE & CONFIG
+        // =================================================================
+
+        let currentUserID = null;
+        let currentUsername = 'Guest';
+        let currentDiamonds = 0;
+        let isUserAdmin = false;
+        let realtimeChannel = null; 
+        
+        // Slots configuration
+        const COST_PER_SPIN = 100;
+        const SYMBOLS = ['💎', '7', '🔔', '🍒', '🍋'];
+        const PAYOUTS = {
+            '💎💎💎': 5000, 
+            '777': 2500,
+            '🔔🔔🔔': 1000,
+            '🍒🍒🍒': 500,
+            '🍋🍋🍋': 250,
+        };
+
+        // Roulette configuration
+        const ROULETTE_COST = 500; // Cost per roulette spin
+        const ROULETTE_WHEEL = ['Red', 'Red', 'Black', 'Black', 'Green']; // Weighted wheel
+        const ROULETTE_PAYOUTS = {
+            'Red': 2,    // 2x payout
+            'Black': 2,  // 2x payout
+            'Green': 14, // 14x payout (jackpot color)
+        };
+
+        // Daily Bonus configuration
+        const DAILY_BONUS_AMOUNT = 500;
+        const COOLDOWN_HOURS = 24;
+
+        // Display the game costs in the UI
+        document.getElementById('slotsCostDisplay').textContent = COST_PER_SPIN;
+        document.getElementById('rouletteCostDisplay').textContent = ROULETTE_COST;
+
+        // =================================================================
+        //                       AUTHENTICATION & DATA
+        // =================================================================
+
         async function handleAuth() {
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
-            if (!email || !password) return alert('Please enter both email and password.');
+            const authMessage = document.getElementById('authMessage');
+            authMessage.textContent = 'Processing...';
 
-            // 1. Try to sign in
-            let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error && error.message.includes('Invalid login credentials')) {
-                // 2. If sign in fails, try to sign up
-                showMessageBox("Attempting to register new user...");
-                ({ data, error } = await supabase.auth.signUp({ email, password }));
-            }
+            let { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                alert(`Authentication Error: ${error.message}`);
-                return;
-            }
+                if (error.message.includes('Invalid login credentials')) {
+                    const { data: { user: newUser }, error: signUpError } = await supabase.auth.signUp({ 
+                        email, 
+                        password 
+                    });
 
-            // 3. Success: Initialize the game session with the user's UUID
-            await initializeGameSession(data.user.id, email);
-        }
-
-        async function initializeGameSession(authId, userEmail) {
-            // Set global variables based on Supabase Auth ID (the UUID)
-            currentUserId = authId; 
-            // Use the email prefix as a default username for the game logic
-            userName = userEmail.split('@')[0]; 
-            
-            document.getElementById('userNameDisplay').textContent = userName;
-            document.getElementById('authStatus').textContent = `Logged in as ${userEmail}`;
-            document.getElementById('authContainer').style.display = 'none'; // Hide login form
-
-            // FIX: Show the game area only after successful login/registration
-            document.getElementById('gameAreaContainer').style.display = 'block'; 
-
-            // Now call the main game initializer
-            await initialize();
-        }
-
-        async function initialize() {
-            if (!currentUserId) return;
-
-            // 1. Try to load data from Supabase using the user's UUID
-            const { data: userData, error } = await supabase
-                .from('players') 
-                .select('*')
-                .eq('user_id', currentUserId) // Uses the real Supabase UUID
-                .single();
-
-            if (userData) {
-                // Data found in Supabase
-                diamonds = userData.diamonds || 1000;
-                playerStats = userData.player_stats_json || {};
-                userName = userData.username || userName; // Load username from DB
-            } else if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows found"
-                console.error('Supabase Fetch Error:', error);
-            }
-            
-            // --- FINAL DEFAULT CHECK & INITIALIZATION (Ensuring all 23 keys exist) ---
-            if (diamonds < 1000) diamonds = 1000; 
-            
-            playerStats.luckMultiplier = playerStats.luckMultiplier || 1;
-            playerStats.freeSpins = playerStats.freeSpins || 0;
-            playerStats.insuranceActive = playerStats.insuranceActive || false;
-            playerStats.shieldActive = playerStats.shieldActive || false;
-            playerStats.dailyBonusMultiplier = playerStats.dailyBonusMultiplier || 1;
-            playerStats.stealthEndTime = playerStats.stealthEndTime || 0;
-            playerStats.respinToken = playerStats.respinToken || 0;
-            playerStats.megaSpinCount = playerStats.megaSpinCount || 0;
-            playerStats.oddEvenBufferCount = playerStats.oddEvenBufferCount || 0;
-            playerStats.doubleUpActive = playerStats.doubleUpActive || false;
-            playerStats.pointerFocusActive = playerStats.pointerFocusActive || false;
-            playerStats.lastDailyBonus = playerStats.lastDailyBonus || 0;
-            playerStats.betUndoActive = playerStats.betUndoActive || false; 
-            playerStats.reelFreezeT2Count = playerStats.reelFreezeT2Count || 0; 
-            playerStats.respinT2Count = playerStats.respinT2Count || 0;
-            playerStats.wildReelCount = playerStats.wildReelCount || 0; 
-            playerStats.pointerFocusT2Count = playerStats.pointerFocusT2Count || 0;
-            playerStats.doubleUpT2Count = playerStats.doubleUpT2Count || 0;
-            playerStats.columnGuardCount = playerStats.columnGuardCount || 0;
-            playerStats.godSpinActive = playerStats.godSpinActive || false;
-            playerStats.jackpotMultiplierActive = playerStats.jackpotMultiplierActive || false;
-            playerStats.alchemistBetActive = playerStats.alchemistBetActive || false;
-            playerStats.zeroInsuranceActive = playerStats.zeroInsuranceActive || false;
-            playerStats.infinityPotionUsed = playerStats.infinityPotionUsed || false;
-
-
-            updateDisplay();
-            savePlayerData(); 
-        }
-
-        async function savePlayerData() {
-            if (!currentUserId) return;
-            
-            const dataToSave = {
-                user_id: currentUserId, // UUID
-                username: userName,
-                diamonds: diamonds,
-                player_stats_json: playerStats,
-                last_login: Date.now(),
-            };
-
-            const { error } = await supabase
-                .from('players') // **NOTE: Using 'players' table name**
-                .upsert(dataToSave, { onConflict: 'user_id' });
-
-            if (error) {
-                console.error('Error saving data to Supabase:', error);
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', updateDisplay);
-
-
-        // --- UI & DISPLAY FUNCTIONS (Unchanged) ---
-
-        function updateDisplay() {
-            document.getElementById('diamondBalance').innerHTML = `<span class="diamond">💎</span> ${diamonds.toLocaleString()}`;
-            updateLuckStatusDisplay();
-        }
-
-        function showMessageBox(message) {
-            document.getElementById(selectedGame + 'Result').innerHTML = message;
-        }
-
-        function updateLuckStatusDisplay() {
-            let status = [];
-
-            // --- T1 & T2 Slots Boosts ---
-            if (playerStats.luckMultiplier > 1) status.push('T1✨ Luck');
-            if (playerStats.insuranceActive) status.push('T1💰 Insure');
-            if (playerStats.reelFreezeActive) status.push('T1🍒 Freeze');
-            if (playerStats.megaSpinCount > 0) status.push(`T2⚡ Mega: ${playerStats.megaSpinCount}`);
-            if (playerStats.reelFreezeT2Count > 0) status.push(`T2🍒 Freeze: ${playerStats.reelFreezeT2Count}`);
-            if (playerStats.wildReelCount > 0) status.push(`T2⭐ Wild: ${playerStats.wildReelCount}`);
-
-            // --- T1 & T2 Roulette Boosts ---
-            if (playerStats.freeSpins > 0) status.push(`T1🔥 Free: ${playerStats.freeSpins}`);
-            if (playerStats.shieldActive) status.push('T1🛡️ Shield');
-            if (playerStats.betUndoActive) status.push('T1🩹 Undo');
-            if (playerStats.oddEvenBufferCount > 0) status.push(`T2🎲 Buffer: ${playerStats.oddEvenBufferCount}`);
-            
-            const respinCount = (playerStats.respinToken || 0) + (playerStats.respinT2Count || 0) * 2;
-            if (respinCount > 0) status.push(`T1/T2🔄 Respin: ${respinCount}`);
-
-            const doubleUpCount = (playerStats.doubleUpActive ? 1 : 0) + (playerStats.doubleUpT2Count || 0);
-            if (doubleUpCount > 0) status.push(`T1/T2🔁 Double Up: ${doubleUpCount}`);
-
-            const focusCount = (playerStats.pointerFocusActive ? 1 : 0) + (playerStats.pointerFocusT2Count || 0);
-            if (focusCount > 0) status.push(`T1/T2🎯 Focus: ${focusCount}`);
-            if (playerStats.columnGuardCount > 0) status.push(`T2🔴 Guard: ${playerStats.columnGuardCount}`);
-
-
-            // --- T3 Legendary Boosts ---
-            if (playerStats.godSpinActive) status.push('T3🔥 GOD SPIN');
-            if (playerStats.jackpotMultiplierActive) status.push('T3👑 J-MULTI');
-            if (playerStats.alchemistBetActive) status.push('T3🌈 ALCHEMIST');
-            if (playerStats.zeroInsuranceActive) status.push('T3🟢 Z-INSURE');
-            
-            // --- Global/Utility ---
-            if (playerStats.stealthEndTime > Date.now()) status.push('T1⬆️ Stealth');
-            if (playerStats.dailyBonusMultiplier > 1) status.push('T1🎁 Daily x2');
-            
-            const statusEl = document.getElementById('luckStatus');
-            
-            if (status.length > 0) {
-                statusEl.textContent = `| Active Buffs: ${status.join(' | ')} |`;
-                statusEl.style.color = status.find(s => s.startsWith('T3')) ? '#8f4aff' : '#00eaff'; 
+                    if (signUpError) {
+                        authMessage.textContent = `Registration failed: ${signUpError.message}`;
+                        return;
+                    }
+                    
+                    user = newUser;
+                    authMessage.textContent = 'Registration successful! Please check your email to confirm registration.';
+                } else {
+                    authMessage.textContent = `Login failed: ${error.message}`;
+                    return;
+                }
             } else {
-                statusEl.textContent = `(No Active Buffs)`;
-                statusEl.style.color = '#ffcc00';
-            }
-        }
-        
-        function changeGame(game) {
-            selectedGame = game;
-            document.getElementById('slots').style.display = (game === 'slots' ? 'block' : 'none');
-            document.getElementById('roulette').style.display = (game === 'roulette' ? 'block' : 'none');
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab-button[onclick*="'${game}'"]`).classList.add('active');
-        }
-
-        // --- POWER-UP STORE LOGIC (Unchanged) ---
-
-        function openStore() {
-            if (!currentUserId) return showMessageBox("Please log in first!");
-            document.getElementById('storeModal').style.display = 'block';
-            if (playerStats.infinityPotionUsed) {
-                 document.getElementById('buyInfinityPotion').disabled = true;
-            }
-        }
-
-        function closeStore() {
-            document.getElementById('storeModal').style.display = 'none';
-        }
-
-        function buyPowerUp(item, cost) {
-            if (!currentUserId) return showMessageBox("Please log in first!");
-            if (diamonds < cost && item !== 'muteToggle') {
-                alert(`Insufficient Diamonds! This item costs ${cost.toLocaleString()} 💎.`);
-                return;
+                authMessage.textContent = 'Login successful!';
             }
 
-            let message = `Successfully purchased ${item}!`;
+            if (user) {
+                // Logic for inserting the player profile if it's a new user
+                const { data: profile } = await supabase
+                    .from('players')
+                    .select('id')
+                    .eq('id', user.id)
+                    .maybeSingle();
 
-            // Handle the free item first...
-            if (item === 'muteToggle') { 
-                alert("Sound Toggled (Placeholder)"); 
-                return;
-            }
-            
-            // Deduct cost
-            diamonds -= cost;
-            
-            // --- TIER 1 POWER-UPS (10 Total) ---
-            if (item === 'luckBoost') { playerStats.luckMultiplier = 2; message = "✨ Slots Luck Boost activated! Spin for higher chances!"; } 
-            else if (item === 'insurance') { playerStats.insuranceActive = true; message = "💰 Jackpot Insurance activated! You're partially covered on your next loss."; }
-            else if (item === 'freeSpin') { playerStats.freeSpins = (playerStats.freeSpins || 0) + 1; message = `🔥 Roulette Free Spin added! You now have ${playerStats.freeSpins} free spins.`; }
-            else if (item === 'greenShield') { playerStats.shieldActive = true; message = "🛡️ Green Sector Shield activated! Your next Roulette bet is protected from Green/Zero."; }
-            else if (item === 'dailyBonus') { playerStats.dailyBonusMultiplier = 2; message = "🎁 Daily Diamond Bonus (x2) applied to your next bonus collection!"; }
-            else if (item === 'stealth') { playerStats.stealthEndTime = Date.now() + (60 * 60 * 1000); message = "⬆️ Leaderboard Stealth activated for 1 hour. Get rich in secret!"; }
-            else if (item === 'potion') { diamonds += 500; message = "🧪 Potion of Riches consumed! +500 Diamonds instantly added to your balance. (You overpaid!)"; } 
-            else if (item === 'uiRefresh') { message = "🔄 UI Refresh initiated. Game state reloaded!"; initialize(); }
-            else if (item === 'betUndo') { playerStats.betUndoActive = true; message = "🩹 Bet Undo active! You can click a bet type again to change it before spinning."; }
-            
-            // --- TIER 2 POWER-UPS (8 Total) ---
-            else if (item === 'megaSpin') { playerStats.megaSpinCount = (playerStats.megaSpinCount || 0) + 5; message = `⚡ Mega Spin Multiplier active for ${playerStats.megaSpinCount} spins!`; }
-            else if (item === 'oddEvenBuffer') { playerStats.oddEvenBufferCount = (playerStats.oddEvenBufferCount || 0) + 5; message = `🎲 Odd/Even Buffer active for ${playerStats.oddEvenBufferCount} spins!`; }
-            else if (item === 'reelFreezeT2') { playerStats.reelFreezeT2Count += 3; message = `🍒 T2 Reel Freeze activated for ${playerStats.reelFreezeT2Count} spins!`; }
-            else if (item === 'respinT2') { playerStats.respinToken = (playerStats.respinToken || 0) + 2; message = `🔄 T2 Re-Spin Token added! You have ${playerStats.respinToken} ready.`; }
-            else if (item === 'wildReel') { playerStats.wildReelCount = (playerStats.wildReelCount || 0) + 2; message = `⭐ Wild Reel Chance active for ${playerStats.wildReelCount} spins!`; }
-            else if (item === 'pointerFocusT2') { playerStats.pointerFocusT2Count = (playerStats.pointerFocusT2Count || 0) + 2; message = `🎯 T2 Pointer Focus active for ${playerStats.pointerFocusT2Count} spins!`; }
-            else if (item === 'doubleUpT2') { playerStats.doubleUpT2Count = (playerStats.doubleUpT2Count || 0) + 2; message = `🔁 T2 Double Up Token active for ${playerStats.doubleUpT2Count} wins!`; }
-            else if (item === 'columnGuard') { playerStats.columnGuardCount = (playerStats.columnGuardCount || 0) + 2; message = `🔴 T2 Column Guard active for ${playerStats.columnGuardCount} spins! Protects against total loss on column bets.`; }
-
-            // --- TIER 3 POWER-UPS (5 Total) ---
-            else if (item === 'godSpin') { playerStats.godSpinActive = true; message = "🔥 T3 God Spin Token active! Your next spin is guaranteed a 4-of-a-kind jackpot!"; }
-            else if (item === 'jackpotMultiplier') { playerStats.jackpotMultiplierActive = true; message = "👑 T3 Jackpot Multiplier active! Your next 5-of-a-kind payout is doubled!"; }
-            else if (item === 'alchemistBet') { playerStats.alchemistBetActive = true; message = "🌈 T3 The Alchemist's Bet active! Your next 2x win pays 3x!"; }
-            else if (item === 'zeroInsurance') { playerStats.zeroInsuranceActive = true; message = "🟢 T3 Zero Insurance active! Your next zero result will not cost you your 2x bets."; }
-            else if (item === 'infinityPotion') {
-                if (playerStats.infinityPotionUsed) { diamonds += cost; alert("This is a limited, one-time purchase!"); return; }
-                diamonds = 500000000; // 500 million
-                playerStats.infinityPotionUsed = true;
-                message = "♾️ T3 Infinity Potion used! Diamond balance set to 500,000,000 💎!";
-                document.getElementById('buyInfinityPotion').disabled = true;
-            }
-
-            showMessageBox(message);
-            updateDisplay();
-            updateLuckStatusDisplay();
-            savePlayerData(); 
-            openStore(); 
-        }
-
-        // --- SLOTS GAME LOGIC (Unchanged) ---
-
-        async function spin() {
-            if (!currentUserId) return showMessageBox("Please log in first!");
-            if (isSpinning) return;
-
-            const cost = parseInt(document.getElementById('slotsBetAmount').value);
-            if (isNaN(cost) || cost <= 0) return showMessageBox("Invalid bet amount.");
-            if (diamonds < cost) return showMessageBox(`Insufficient diamonds. Current balance: ${diamonds.toLocaleString()} 💎.`);
-
-            isSpinning = true;
-            diamonds -= cost;
-            updateDisplay();
-            showMessageBox("Spinning...");
-
-            const finalSymbols = [];
-            const reelEls = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3'), document.getElementById('reel4'), document.getElementById('reel5')];
-
-            // T3 God Spin overrides all other spin helpers for maximum effect
-            if (playerStats.godSpinActive) {
-                const godSymbol = jackpotSymbols[Math.floor(Math.random() * jackpotSymbols.length)];
-                finalSymbols.push(godSymbol, godSymbol, godSymbol, godSymbol, symbols[Math.floor(Math.random() * symbols.length)]); // 4 of a kind, 5th is random but doesn't matter for 4x payout
-                playerStats.godSpinActive = false;
-            }
-
-            for (let i = 0; i < SLOTS_COUNT; i++) {
-                await new Promise(resolve => {
-                    setTimeout(() => {
-                        let symbol;
-                        
-                        if (playerStats.godSpinActive) {
-                            symbol = finalSymbols[i]; // Use the pre-set God Spin result
-                        } else {
-                            // --- Reel Freeze Logic (T1 or T2) ---
-                            if (i === 0 && (playerStats.reelFreezeActive || playerStats.reelFreezeT2Count > 0)) {
-                                symbol = jackpotSymbols[Math.floor(Math.random() * jackpotSymbols.length)];
-                                if (playerStats.reelFreezeActive) playerStats.reelFreezeActive = false; 
-                                if (playerStats.reelFreezeT2Count > 0) playerStats.reelFreezeT2Count--; 
-                            } 
-                            // --- Wild Reel Logic (T2) ---
-                            else if (playerStats.wildReelCount > 0 && Math.random() < 0.1) { 
-                                symbol = '💎'; 
+                if (!profile) {
+                    const { error: insertError } = await supabase
+                        .from('players')
+                        .insert([
+                            { 
+                                id: user.id, 
+                                username: email.split('@')[0], 
+                                diamonds: 5000, // Starting Diamonds
                             }
-                            // --- Luck Boost (T1) ---
-                            else if (playerStats.luckMultiplier > 1 && jackpotSymbols.includes(symbols[Math.floor(Math.random() * symbols.length)]) && Math.random() < 0.5) { 
-                                symbol = jackpotSymbols[Math.floor(Math.random() * jackpotSymbols.length)];
-                            }
-                            else {
-                                symbol = symbols[Math.floor(Math.random() * symbols.length)];
-                            }
-                            finalSymbols.push(symbol);
-                        }
-
-                        // Simple visual animation placeholder
-                        reelEls[i].textContent = symbol;
-                        resolve();
-                    }, 300 + (i * 300));
-                });
-            }
-            
-            if (playerStats.wildReelCount > 0) playerStats.wildReelCount--; 
-
-            setTimeout(() => {
-                checkSlotResults(cost, finalSymbols);
-                isSpinning = false;
-                savePlayerData();
-            }, 300 + (SLOTS_COUNT * 300) + 100);
-        }
-
-        function checkSlotResults(cost, finalSymbols) {
-            const counts = {};
-            finalSymbols.forEach(s => counts[s] = (counts[s] || 0) + 1);
-            let multiplier = 0;
-            let winningSymbol = '';
-
-            for (const sym in counts) {
-                if (counts[sym] === 5) {
-                    multiplier = 100; // 5 of a kind (Jackpot)
-                    winningSymbol = sym;
-                } else if (counts[sym] === 4) {
-                    multiplier = 20; // 4 of a kind
-                    winningSymbol = sym;
-                } else if (counts[sym] === 3) {
-                    multiplier = 5;
-                    winningSymbol = sym;
-                }
-            }
-
-            let bonusText = '';
-
-            // T3 Jackpot Multiplier
-            if (multiplier >= 20 && playerStats.jackpotMultiplierActive) { 
-                multiplier *= 2;
-                playerStats.jackpotMultiplierActive = false; 
-                bonusText += ` (👑 JACKPOT x2!)`;
-            }
-            
-            // T2 Mega Spin Multiplier
-            if (playerStats.megaSpinCount > 0 && multiplier > 0 && multiplier < 20) {
-                multiplier = Math.ceil(multiplier * 1.5);
-                playerStats.megaSpinCount--;
-                bonusText += ` (⚡ Mega Spin +50%!)`;
-            }
-
-            let reward = cost * multiplier;
-
-            if (multiplier > 0) {
-                diamonds += reward;
-                showMessageBox(`WIN! ${winningSymbol} x${multiplier}! You won ${reward.toLocaleString()} 💎!${bonusText}`);
-            } else {
-                let refund = 0;
-                // T1 Jackpot Insurance
-                if (playerStats.insuranceActive) {
-                    refund = Math.floor(cost * 0.10);
-                    diamonds += refund;
-                    playerStats.insuranceActive = false;
-                    bonusText += ` (💰 Insurance Refunded ${refund.toLocaleString()} 💎)`;
-                }
-
-                showMessageBox(`LOSS. Try again! ${bonusText}`);
-                
-                // T2 Re-Spin Token
-                if (playerStats.respinToken > 0) {
-                    showMessageBox(`LOSS. Use T2 Re-Spin Token? <button onclick="useRespinToken(${cost})">Respin (1x)</button>`);
-                }
-            }
-            
-            // T1 Luck Multiplier is single use on spin, win or lose.
-            if (playerStats.luckMultiplier > 1) playerStats.luckMultiplier = 1;
-
-            updateDisplay();
-        }
-
-        // T2 Re-spin Token function
-        function useRespinToken(cost) {
-            if (playerStats.respinToken > 0) {
-                playerStats.respinToken--;
-                diamonds += cost; // Refund the previous bet to simulate a free spin
-                spin();
-            }
-        }
-
-        // --- ROULETTE GAME LOGIC (Unchanged) ---
-        const ROULETTE_NUMBERS = [
-            { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' }, 
-            // ... (rest of 36 numbers) ...
-        ];
-
-        function selectRouletteBet(type) {
-            const betButtons = document.querySelectorAll('.bet-options button');
-            betButtons.forEach(btn => btn.classList.remove('active-bet'));
-
-            if (selectedBetType === type && playerStats.betUndoActive) {
-                selectedBetType = null;
-                playerStats.betUndoActive = false;
-                showMessageBox("Bet undone. Select a new bet.");
-                return;
-            }
-            
-            selectedBetType = type;
-            // Highlight the selected button
-            document.querySelector(`.bet-options button[onclick*="'${type}'"]`).classList.add('active-bet');
-            showMessageBox(`Bet placed on ${type.toUpperCase()}.`);
-        }
-
-        async function spinRoulette() {
-            if (!currentUserId) return showMessageBox("Please log in first.");
-            if (!selectedBetType) return showMessageBox("Please select a bet type first.");
-
-            let betAmount = parseInt(document.getElementById('rouletteBetAmount').value);
-            if (isNaN(betAmount) || betAmount <= 0) return showMessageBox("Invalid bet amount.");
-
-            let isFreeSpin = false;
-            if (playerStats.freeSpins > 0) {
-                isFreeSpin = true;
-                playerStats.freeSpins--;
-            } else if (diamonds < betAmount) {
-                return showMessageBox(`Insufficient diamonds. Current balance: ${diamonds.toLocaleString()} 💎.`);
-            }
-
-            if (!isFreeSpin) {
-                diamonds -= betAmount;
-            }
-            updateDisplay();
-
-            // Placeholder for spin animation (gets result immediately for simplicity)
-            const spinEl = document.getElementById('rouletteWheel');
-            spinEl.textContent = '...';
-            spinEl.style.transition = 'none';
-
-            let winningNumber;
-
-            // --- Pointer Focus Logic (T1/T2 Pre-spin adjustment) ---
-            const focusCount = (playerStats.pointerFocusT2Count || 0) + (playerStats.pointerFocusActive ? 1 : 0);
-
-            if (focusCount > 0 && (selectedBetType === 'red' || selectedBetType === 'black')) {
-                if (Math.random() < 0.5) { 
-                    const targetColor = selectedBetType;
-                    const possibleWins = ROULETTE_NUMBERS.filter(n => n.color === targetColor);
-                    winningNumber = possibleWins[Math.floor(Math.random() * possibleWins.length)].num;
-                }
-                if (playerStats.pointerFocusActive) playerStats.pointerFocusActive = false; 
-                if (playerStats.pointerFocusT2Count > 0) playerStats.pointerFocusT2Count--; 
-            } else {
-                winningNumber = Math.floor(Math.random() * 37); // 0 to 36
-            }
-
-            const winningColor = (winningNumber === 0) ? 'green' : (winningNumber % 2 === 0 ? 'black' : 'red');
-            spinEl.textContent = winningNumber;
-            spinEl.style.backgroundColor = winningColor;
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            let payoutMultiplier = 0;
-            let refundText = '';
-            let isWin = false;
-
-            if (selectedBetType === 'red' && winningColor === 'red' && winningNumber !== 0) payoutMultiplier = 2;
-            else if (selectedBetType === 'black' && winningColor === 'black') payoutMultiplier = 2;
-            else if (selectedBetType === 'odd' && winningNumber % 2 !== 0 && winningNumber !== 0) payoutMultiplier = 2;
-            else if (selectedBetType === 'even' && winningNumber % 2 === 0 && winningNumber !== 0) payoutMultiplier = 2;
-            else if (selectedBetType === 'green' && winningNumber === 0) payoutMultiplier = 35;
-            else if (selectedBetType === 'zero' && winningNumber === 0) payoutMultiplier = 35;
-
-            // T3 Alchemist's Bet
-            if (payoutMultiplier === 2 && playerStats.alchemistBetActive) {
-                payoutMultiplier = 3;
-                playerStats.alchemistBetActive = false; 
-                refundText += ` 🌈 Alchemist's Bet activated!`;
-            }
-
-            let winnings = betAmount * payoutMultiplier;
-
-            if (payoutMultiplier > 0) {
-                isWin = true;
-                // T1/T2 Double Up Token
-                const doubleUpCount = (playerStats.doubleUpActive ? 1 : 0) + (playerStats.doubleUpT2Count || 0);
-                if (payoutMultiplier >= 2 && doubleUpCount > 0 && !isFreeSpin) {
-                    winnings *= 2;
-                    refundText += ` 🔁 Double Up!`;
-                    if (playerStats.doubleUpActive) playerStats.doubleUpActive = false;
-                    if (playerStats.doubleUpT2Count > 0) playerStats.doubleUpT2Count--;
-                }
-                
-                diamonds += winnings + betAmount; // Add win + refund bet
-                showMessageBox(`WIN! Rolled ${winningNumber} (${winningColor}). Won ${winnings.toLocaleString()} 💎!${refundText}`);
-            } else {
-                // Loss protection checks
-
-                // T3 Zero Insurance 
-                if (winningNumber === 0 && (selectedBetType !== 'green') && playerStats.zeroInsuranceActive) {
-                    diamonds += betAmount; 
-                    refundText = ` 🟢 Zero Insurance: ${betAmount.toLocaleString()} 💎 refunded.`;
-                    playerStats.zeroInsuranceActive = false; 
-                }
-
-                // T1 Green Sector Shield
-                if (winningNumber === 0 && selectedBetType !== 'green' && playerStats.shieldActive) {
-                    diamonds += betAmount;
-                    playerStats.shieldActive = false;
-                    refundText = ` 🛡️ Shield: ${betAmount.toLocaleString()} 💎 refunded.`;
-                }
-
-                // T2 Odd/Even Buffer
-                if (playerStats.oddEvenBufferCount > 0 && (selectedBetType === 'odd' || selectedBetType === 'even')) {
-                    const refund = Math.floor(betAmount * 0.5);
-                    diamonds += refund;
-                    playerStats.oddEvenBufferCount--; 
-                    refundText += ` 🎲 Buffer: ${refund.toLocaleString()} 💎 refunded.`;
-                }
-                
-                // T2 Column Guard (Logic is complex, placeholder usage)
-                // if (playerStats.columnGuardCount > 0) { playerStats.columnGuardCount--; /* complex refund logic */ }
-
-                showMessageBox(`LOSS. Rolled ${winningNumber} (${winningColor}). ${refundText}`);
-            }
-
-            playerStats.betUndoActive = false; // Undo is consumed after any spin
-            selectedBetType = null;
-            document.querySelectorAll('.bet-options button').forEach(btn => btn.classList.remove('active-bet'));
-            updateDisplay();
-            savePlayerData();
-        }
-
-        // --- DAILY BONUS LOGIC (Unchanged) ---
-
-        function openDailyBonus() {
-            document.getElementById('dailyBonusModal').style.display = 'block';
-        }
-
-        function closeDailyBonus() {
-            document.getElementById('dailyBonusModal').style.display = 'none';
-        }
-
-        function checkDailyBonus() {
-            if (!currentUserId) return showMessageBox("Please log in first!");
-
-            const oneDay = 24 * 60 * 60 * 1000;
-            const now = Date.now();
-            const lastLogin = playerStats.lastDailyBonus || 0;
-
-            if (now - lastLogin >= oneDay) {
-                document.getElementById('dailyBonusMessage').textContent = `Your ${playerStats.dailyBonusMultiplier}x daily bonus is ready!`;
-                document.getElementById('collectBonusButton').style.display = 'block';
-            } else {
-                const timeLeft = oneDay - (now - lastLogin);
-                const hours = Math.floor(timeLeft / (60 * 60 * 1000));
-                const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-                document.getElementById('dailyBonusMessage').textContent = `Come back in ${hours}h ${minutes}m for your next daily bonus.`;
-                document.getElementById('collectBonusButton').style.display = 'none';
-            }
-
-            openDailyBonus();
-        }
-
-        function collectDailyBonus() {
-            const baseBonus = 100000; // 100K base bonus
-            const bonusAmount = baseBonus * playerStats.dailyBonusMultiplier;
-            
-            diamonds += bonusAmount;
-            playerStats.lastDailyBonus = Date.now();
-            playerStats.dailyBonusMultiplier = 1; // Reset multiplier after use
-
-            showMessageBox(`Collected ${bonusAmount.toLocaleString()} 💎 daily bonus!`);
-            closeDailyBonus();
-            updateDisplay();
-            savePlayerData();
-        }
-
-        // --- LEADERBOARD LOGIC (Unchanged) ---
-
-        function openLeaderboard() {
-            document.getElementById('leaderboardModal').style.display = 'block';
-            fetchLeaderboard();
-        }
-
-        function closeLeaderboard() {
-            document.getElementById('leaderboardModal').style.display = 'none';
-        }
-
-        async function fetchLeaderboard() {
-            const leaderboardEl = document.getElementById('leaderboardContent');
-
-            const isStealthActive = playerStats.stealthEndTime > Date.now();
-            
-            const { data, error } = await supabase
-                .from('players') 
-                .select('user_id, username, diamonds')
-                .order('diamonds', { ascending: false })
-                .limit(10); 
-
-            if (error) {
-                leaderboardEl.innerHTML = `<p style="color:red;">Error loading leaderboard: ${error.message}</p>`;
-                return;
-            }
-
-            let tableHTML = '<table><tr><th>Rank</th><th>Username</th><th>💎 Diamonds</th></tr>';
-            
-            data.forEach((player, index) => {
-                let rowClass = '';
-                let diamondsDisplay = player.diamonds.toLocaleString();
-
-                if (player.user_id === currentUserId) {
-                    rowClass = 'style="background-color: #4a4a70;"'; 
-                    if (isStealthActive) {
-                        diamondsDisplay = '*** STEALTH MODE ACTIVE ***'; 
+                        ]);
+                    if (insertError) {
+                        console.error('Profile insertion failed:', insertError);
                     }
                 }
-
-                tableHTML += `<tr ${rowClass}>
-                                <td>#${index + 1}</td>
-                                <td>${player.username}</td>
-                                <td>${diamondsDisplay}</td>
-                              </tr>`;
-            });
-
-            tableHTML += '</table>';
-            leaderboardEl.innerHTML = tableHTML;
+                
+                loadUserData(); 
+            }
         }
 
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+            }
+            
+            // Clear local state and update UI
+            currentUserID = null;
+            currentDiamonds = 0;
+            currentUsername = 'Guest';
+            isUserAdmin = false;
+
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('logoutButton').style.display = 'none';
+            document.getElementById('gameAreaContainer').style.display = 'none';
+            document.getElementById('adminPanelContainer').style.display = 'none';
+            document.getElementById('diamondCount').textContent = '0';
+            document.getElementById('welcomeMessage').textContent = 'Guest. Please log in to start.';
+        }
+        
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session?.user) {
+                loadUserData();
+            } else if (event === 'SIGNED_OUT') {
+                handleLogout();
+            }
+        });
+
+        async function loadUserData() {
+            const user = (await supabase.auth.getUser()).data.user;
+            if (!user) return;
+
+            const { data: profile, error } = await supabase
+                .from('players')
+                .select('*') 
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('Error fetching profile:', error);
+                return;
+            }
+
+            // Update global variables
+            currentUserID = user.id;
+            currentUsername = profile.username;
+            currentDiamonds = profile.diamonds;
+            isUserAdmin = profile.is_admin; 
+            
+            // Update the UI
+            updateGameUI();
+            checkDailyBonusStatus();
+        }
+
+        function updateGameUI() {
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
+
+            document.getElementById('adminPanelContainer').style.display = isUserAdmin ? 'block' : 'none';
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('logoutButton').style.display = 'block';
+            document.getElementById('gameAreaContainer').style.display = 'block';
+            document.getElementById('authMessage').textContent = '';
+        }
+
+        // =================================================================
+        //                           GAME MODE SWITCH
+        // =================================================================
+        
+        function changeGameMode(mode) {
+            document.getElementById('slotsMode').style.display = mode === 'slots' ? 'block' : 'none';
+            document.getElementById('rouletteMode').style.display = mode === 'roulette' ? 'block' : 'none';
+            
+            // Reset messages when switching modes
+            document.getElementById('resultMessage').textContent = 'Click Start Slot Spin!';
+            document.getElementById('rouletteResultMessage').textContent = 'Pick your color to place a bet!';
+        }
+
+
+        // =================================================================
+        //                         SLOTS GAME LOGIC
+        // =================================================================
+
+        function getRandomSymbol() {
+            return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+        }
+
+        function calculateWinnings(symbols) {
+            const symbolsString = symbols.join('');
+            if (PAYOUTS[symbolsString]) {
+                return PAYOUTS[symbolsString];
+            }
+            
+            if (symbols.filter(s => s === '💎').length === 2) {
+                return 200;
+            }
+            
+            return 0;
+        }
+
+        async function startGame() {
+            if (currentDiamonds < COST_PER_SPIN) {
+                document.getElementById('resultMessage').textContent = `You need ${COST_PER_SPIN} diamonds to play!`;
+                return;
+            }
+
+            currentDiamonds -= COST_PER_SPIN;
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('resultMessage').textContent = 'Spinning...';
+            document.getElementById('slotDisplay').textContent = '✨ ✨ ✨';
+            document.getElementById('startGameButton').disabled = true;
+
+            await new Promise(resolve => setTimeout(resolve, 1000)); 
+
+            const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+            const winnings = calculateWinnings(results);
+            currentDiamonds += winnings;
+
+            document.getElementById('slotDisplay').textContent = results.join(' ');
+            if (winnings > 0) {
+                document.getElementById('resultMessage').textContent = `WINNER! You won ${winnings.toLocaleString()} diamonds!`;
+            } else {
+                document.getElementById('resultMessage').textContent = 'Better luck next time!';
+            }
+
+            const { error } = await supabase
+                .from('players')
+                .update({ diamonds: currentDiamonds })
+                .eq('id', currentUserID);
+
+            if (error) {
+                console.error('Database update failed:', error);
+                document.getElementById('resultMessage').textContent = `Error: Diamond update failed. ${error.message}`;
+            }
+            
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('startGameButton').disabled = false;
+        }
+
+
+        // =================================================================
+        //                         ROULETTE GAME LOGIC
+        // =================================================================
+        
+        async function startRoulette(playerGuess) {
+            if (currentDiamonds < ROULETTE_COST) {
+                document.getElementById('rouletteResultMessage').textContent = `You need ${ROULETTE_COST} diamonds to play!`;
+                return;
+            }
+            
+            // Disable all buttons during spin
+            const buttons = document.querySelectorAll('#rouletteMode button');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            // 1. Deduct cost locally
+            currentDiamonds -= ROULETTE_COST;
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
+            document.getElementById('rouletteDisplay').textContent = 'Spinning...';
+            
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+            
+            // 2. Determine result
+            const winningColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
+            let winnings = 0;
+            let resultMessage = '';
+
+            if (playerGuess === winningColor) {
+                const payoutMultiplier = ROULETTE_PAYOUTS[winningColor];
+                winnings = ROULETTE_COST * payoutMultiplier;
+                currentDiamonds += winnings;
+                resultMessage = `🎉 WINNER! The wheel landed on ${winningColor}. You won ${winnings.toLocaleString()} diamonds!`;
+            } else {
+                resultMessage = `❌ LOSS! The wheel landed on ${winningColor}. Better luck next time.`;
+            }
+
+            // 3. Update UI
+            document.getElementById('rouletteDisplay').textContent = winningColor;
+            document.getElementById('rouletteResultMessage').textContent = resultMessage;
+
+            // 4. Update database
+            const { error } = await supabase
+                .from('players')
+                .update({ diamonds: currentDiamonds })
+                .eq('id', currentUserID);
+
+            if (error) {
+                console.error('Roulette Database update failed:', error);
+                document.getElementById('rouletteResultMessage').textContent = `Error: Diamond update failed. ${error.message}`;
+            }
+            
+            // 5. Re-enable buttons and update final count
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+        // =================================================================
+        //                          ADMIN PANEL
+        // =================================================================
+        
+        async function updateUserDiamonds() {
+            const targetUserId = document.getElementById('targetUserId').value;
+            const newAmount = parseInt(document.getElementById('newDiamondAmount').value);
+            const adminMessage = document.getElementById('adminMessage');
+
+            if (!targetUserId || isNaN(newAmount) || newAmount < 0) {
+                adminMessage.textContent = 'Please enter a valid User ID (UUID) and a positive Diamond amount.';
+                return;
+            }
+            
+            adminMessage.textContent = 'Updating...';
+
+            const { data, error } = await supabase
+                .from('players')
+                .update({ diamonds: newAmount })
+                .eq('id', targetUserId); 
+
+            if (error && error.code !== '42501') {
+                adminMessage.textContent = `Error: ${error.message}`;
+                console.error('Admin Update Error:', error);
+            } else if (error && error.code === '42501') {
+                adminMessage.textContent = 'Permission Denied. (Check RLS or admin status)';
+            } else {
+                adminMessage.textContent = `Successfully set User ${targetUserId} diamonds to ${newAmount.toLocaleString()}`;
+                if (targetUserId === currentUserID) {
+                    currentDiamonds = newAmount;
+                    document.getElementById('diamondCount').textContent = newAmount.toLocaleString();
+                }
+            }
+        }
+
+
+        // =================================================================
+        //                         DAILY BONUS
+        // =================================================================
+
+        function isDailyBonusReady(lastClaimTimestamp) {
+            if (!lastClaimTimestamp) return true; 
+
+            const lastClaim = new Date(lastClaimTimestamp);
+            const now = new Date();
+            const timeDifferenceMs = now - lastClaim;
+            const cooldownMs = COOLDOWN_HOURS * 60 * 60 * 1000;
+
+            return timeDifferenceMs >= cooldownMs;
+        }
+
+        async function checkDailyBonusStatus() {
+            const bonusButton = document.getElementById('dailyBonusButton');
+            const bonusMessage = document.getElementById('dailyBonusMessage');
+            bonusMessage.textContent = ''; 
+
+            if (!currentUserID) {
+                bonusButton.textContent = 'Daily Bonus (Login)';
+                bonusButton.disabled = true;
+                return;
+            }
+
+            const { data: profile, error } = await supabase
+                .from('players')
+                .select('last_daily_claim')
+                .eq('id', currentUserID)
+                .single();
+                
+            if (error || !profile) {
+                bonusButton.textContent = 'Daily Bonus (Error)';
+                bonusButton.disabled = true;
+                return;
+            }
+
+            if (isDailyBonusReady(profile.last_daily_claim)) {
+                bonusButton.textContent = `Daily Bonus READY! (+${DAILY_BONUS_AMOUNT}💎)`;
+                bonusButton.disabled = false;
+            } else {
+                const lastClaimTime = new Date(profile.last_daily_claim).getTime();
+                const nowTime = new Date().getTime();
+                const remainingMs = (COOLDOWN_HOURS * 60 * 60 * 1000) - (nowTime - lastClaimTime);
+                const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
+                
+                bonusButton.textContent = `Daily Bonus (${remainingHours}h remaining)`;
+                bonusButton.disabled = true;
+            }
+        }
+
+        async function claimDailyBonus() {
+            if (!currentUserID) return; 
+
+            const { error: updateError } = await supabase
+                .from('players')
+                .update({ 
+                    diamonds: currentDiamonds + DAILY_BONUS_AMOUNT,
+                    last_daily_claim: new Date().toISOString()
+                })
+                .eq('id', currentUserID);
+                
+            if (updateError) {
+                document.getElementById('dailyBonusMessage').textContent = 'Failed to claim bonus. Try again.';
+                console.error(updateError);
+                return;
+            }
+
+            currentDiamonds += DAILY_BONUS_AMOUNT;
+            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
+            document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
+            
+            checkDailyBonusStatus();
+        }
+
+        // =================================================================
+        //                         LIVE LEADERBOARD
+        // =================================================================
+
+        function openLeaderboardModal() {
+            if (!realtimeChannel) {
+                subscribeToLeaderboard();
+            }
+            fetchLeaderboardData();
+            document.getElementById('leaderboardModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (realtimeChannel) {
+                supabase.removeChannel(realtimeChannel);
+                realtimeChannel = null;
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('leaderboardModal');
+            if (event.target == modal) {
+                closeModal('leaderboardModal');
+            }
+        }
+
+        async function fetchLeaderboardData() {
+            const { data, error } = await supabase
+                .from('players')
+                .select('username, diamonds')
+                .order('diamonds', { ascending: false })
+                .limit(10);
+
+            if (error) {
+                console.error('Error fetching leaderboard:', error);
+                document.getElementById('leaderboardBody').innerHTML = '<tr><td colspan="3">Failed to load leaderboard.</td></tr>';
+                return;
+            }
+
+            renderLeaderboard(data);
+        }
+
+        function renderLeaderboard(data) {
+            const body = document.getElementById('leaderboardBody');
+            body.innerHTML = '';
+            
+            data.forEach((player, index) => {
+                const row = body.insertRow();
+                const rankCell = row.insertCell(0);
+                const userCell = row.insertCell(1);
+                const diamondCell = row.insertCell(2);
+
+                rankCell.textContent = index + 1;
+                userCell.textContent = player.username;
+                diamondCell.textContent = player.diamonds.toLocaleString();
+
+                row.style.background = (index % 2 === 0) ? '#3a1e74' : '#4a2e84';
+                row.style.color = (player.username === currentUsername) ? '#00ffff' : 'white';
+                row.style.fontWeight = (player.username === currentUsername) ? 'bold' : 'normal';
+                
+                rankCell.style.padding = '10px';
+                userCell.style.padding = '10px';
+                diamondCell.style.padding = '10px';
+            });
+        }
+
+        function subscribeToLeaderboard() {
+            realtimeChannel = supabase
+                .channel('leaderboard-changes')
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'players', 
+                        filter: 'diamonds=neq.null' 
+                    },
+                    (payload) => {
+                        fetchLeaderboardData(); 
+                    }
+                )
+                .subscribe();
+        }
+
+        // Initialize the app on load
+        loadUserData();
+        changeGameMode('slots'); // Start on the slots page
     </script>
+
 </body>
 </html>
