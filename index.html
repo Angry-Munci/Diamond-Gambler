@@ -1,782 +1,388 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Casino</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1f084a, #0d011f);
-            color: #fff;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
-        }
-        .header {
-            background-color: #2a0c5c;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .diamond-icon {
-            font-size: 24px;
-            color: #00ffff;
-            margin-right: 8px;
-        }
-        .main-title {
-            font-size: 48px;
-            color: #00ffff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-        }
-        button {
-            background-color: #7b28c0;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 5px;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        button:hover:not(:disabled) {
-            background-color: #9c4ddf;
-            transform: translateY(-1px);
-        }
-        button:disabled {
-            background-color: #3f226b;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        .game-display {
-            font-size: 60px;
-            margin: 20px 0;
-            background: #000;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #00ffff;
-            letter-spacing: 10px;
-            min-height: 80px;
-        }
-        .message-box {
-            margin-top: 10px;
-            color: #00ffff;
-            font-weight: bold;
-        }
-        /* --- ROULETTE VISUAL STYLES --- */
-        .roulette-result-red {
-            background: linear-gradient(45deg, #ff0000, #990000); 
-            color: white;
-            border: 3px solid #ffaa00;
-        }
-        .roulette-result-black {
-            background: linear-gradient(45deg, #333333, #000000); 
-            color: white;
-            border: 3px solid #666666;
-        }
-        .roulette-result-green {
-            background: linear-gradient(45deg, #33ff33, #009900); 
-            color: #000;
-            border: 3px solid #00ffff;
-        }
-        /* ----------------------------------------------- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-        }
-        .modal-content {
-            background-color: #2a0c5c;
-            margin: 10% auto;
-            padding: 30px;
-            border: 2px solid #00ffff;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 10px;
-            position: relative;
-        }
-        .close {
-            color: #fff;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-        }
-        .close:hover,
-        .close:focus {
-            color: #ccc;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .admin-panel {
-            background: #333;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            text-align: left;
-        }
-        .admin-panel input, .admin-panel button {
-            margin-right: 10px;
-            padding: 8px;
-        }
-        .auth-container input {
-            padding: 8px;
-            margin-right: 5px;
-            width: 180px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Casino 💎</title>
+
+  <!-- ✅ Async Supabase load (does not block page render) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1f084a, #0d011f);
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 💎 Loading Screen */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #190033, #0b011b);
+      color: #00ffff;
+      z-index: 9999;
+      font-size: 24px;
+      transition: opacity 0.6s ease;
+    }
+
+    #loadingScreen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .header {
+      background-color: #2a0c5c;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .diamond-icon {
+      font-size: 24px;
+      color: #00ffff;
+      margin-right: 8px;
+    }
+
+    .main-title {
+      font-size: 48px;
+      color: #00ffff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    }
+
+    button {
+      background-color: #7b28c0;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #9c4ddf;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background-color: #3f226b;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .game-display {
+      font-size: 60px;
+      margin: 20px 0;
+      background: #000;
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #00ffff;
+      letter-spacing: 10px;
+      min-height: 80px;
+    }
+
+    .message-box {
+      margin-top: 10px;
+      color: #00ffff;
+      font-weight: bold;
+    }
+
+    .roulette-result-red {
+      background: linear-gradient(45deg, #ff0000, #990000);
+      color: white;
+      border: 3px solid #ffaa00;
+    }
+
+    .roulette-result-black {
+      background: linear-gradient(45deg, #333333, #000000);
+      color: white;
+      border: 3px solid #666666;
+    }
+
+    .roulette-result-green {
+      background: linear-gradient(45deg, #33ff33, #009900);
+      color: #000;
+      border: 3px solid #00ffff;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+      background-color: #2a0c5c;
+      margin: 10% auto;
+      padding: 30px;
+      border: 2px solid #00ffff;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .close {
+      color: #fff;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      cursor: pointer;
+    }
+
+    .admin-panel {
+      background: #333;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    input {
+      padding: 8px;
+      margin-right: 5px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="header">
-        <div id="userInfo">
-            <div style="font-size: 20px; font-weight: bold;">
-                <span class="diamond-icon">💎</span> Diamonds: <span id="diamondCount">0</span>
-            </div>
-            <div id="welcomeMessage" style="font-size: 16px; margin-top: 5px;">Guest</div>
-        </div>
-        
-        <div id="authContainer" class="auth-container">
-            <input type="email" id="authEmail" placeholder="Email">
-            <input type="password" id="authPassword" placeholder="Password">
-            <button onclick="handleAuth()">Login / Register</button>
-            <p id="authMessage" class="message-box" style="margin: 5px 0;"></p>
-        </div>
+  <!-- 💎 Fast-loading visual -->
+  <div id="loadingScreen">
+    <div style="font-size: 60px;">🎰</div>
+    <p>Loading Diamond Casino...</p>
+  </div>
 
-        <button id="logoutButton" onclick="handleLogout()" style="display: none;">Logout</button>
+  <div class="header">
+    <div id="userInfo">
+      <div style="font-size: 20px; font-weight: bold;">
+        <span class="diamond-icon">💎</span> Diamonds: <span id="diamondCount">0</span>
+      </div>
+      <div id="welcomeMessage" style="font-size: 16px; margin-top: 5px;">Guest</div>
     </div>
 
-    <div id="gameAreaContainer" style="display: none;">
-        <h1 class="main-title">DIAMOND CASINO</h1>
-        
-        <div class="flex" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
-            <button onclick="changeGameMode('slots')" id="slotsButton">🎰 Slots</button>
-            <button onclick="changeGameMode('roulette')" id="rouletteButton">🔴 Roulette</button>
-            <button id="dailyBonusButton" onclick="claimDailyBonus()">Daily Bonus</button>
-            <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
-        </div>
-        <p id="dailyBonusMessage" class="message-box"></p>
-        
-        <div id="slotsMode" style="display: block;">
-            <h2>Diamond Slots ($<span id="slotsCostDisplay">100</span> per spin)</h2>
-            <button id="startGameButton" onclick="startGame()">Start Slot Spin</button>
-            <div class="game-display" id="slotDisplay">-- -- --</div>
-            <p id="resultMessage" class="message-box">Click Start Slot Spin!</p>
-        </div>
-
-        <div id="rouletteMode" style="display: none;">
-            <h2>Roulette ($<span id="rouletteCostDisplay">500</span> per spin)</h2>
-            <div style="margin-bottom: 10px;">
-                <button onclick="startRoulette('Red')" style="background-color: #ff3333;">Bet Red (2x)</button>
-                <button onclick="startRoulette('Black')" style="background-color: #333333;">Bet Black (2x)</button>
-                <button onclick="startRoulette('Green')" style="background-color: #33ff33; color: black;">Bet Green (14x)</button>
-            </div>
-            <div class="game-display" id="rouletteDisplay">Spin the Wheel!</div>
-            <p id="rouletteResultMessage" class="message-box">Pick your color to place a bet!</p>
-        </div>
-
-        <div id="adminPanelContainer" class="admin-panel" style="display: none;">
-            <h3>Admin Panel</h3>
-            <p>Use the **UUID** from the Supabase Table Editor.</p>
-            <input type="text" id="targetUserId" placeholder="Target User ID (UUID)" style="width: 300px;">
-            <input type="number" id="newDiamondAmount" placeholder="New Diamond Amount">
-            <button onclick="updateUserDiamonds()">Set Diamonds</button>
-            <p id="adminMessage" style="color: yellow;"></p>
-        </div>
-    </div>
-    
-    <div id="leaderboardModal" class="modal">
-        <div class="modal-content">
-            <span onclick="closeModal('leaderboardModal')" class="close">&times;</span>
-            <h2>🏆 Live Leaderboard</h2>
-            <table id="leaderboardTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <thead>
-                    <tr>
-                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Rank</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Username</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #00ffff;">Diamonds</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody">
-                    </tbody>
-            </table>
-            <p style="color: yellow; margin-top: 20px;">*Data updates live using Supabase Realtime!*</p>
-        </div>
+    <div id="authContainer" class="auth-container">
+      <input type="email" id="authEmail" placeholder="Email">
+      <input type="password" id="authPassword" placeholder="Password">
+      <button onclick="handleAuth()">Login / Register</button>
+      <p id="authMessage" class="message-box" style="margin: 5px 0;"></p>
     </div>
 
-    <script>
-        // =================================================================
-        //                 SUPABASE CLIENT CONFIGURATION
-        // =================================================================
-        
-        // 🥳 YOUR ACTUAL SUPABASE PROJECT CREDENTIALS 🥳
-        const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbndhaWJjaXZ3em1kd2RqbHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mzk5MTUsImV4cCI6MjA3NzMxNTkxNX0.L-vGz-UnxCCwjRG2kXbp7A-n96EviJYFpgDLOhQr57Y';
-        
-        // Initialize the client
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // =================================================================
-        //                          GLOBAL STATE & CONFIG
-        // =================================================================
-
-        let currentUserID = null;
-        let currentUsername = 'Guest';
-        let currentDiamonds = 0;
-        let isUserAdmin = false;
-        let realtimeChannel = null; 
-        
-        // Slots configuration
-        const COST_PER_SPIN = 100;
-        const SYMBOLS = ['💎', '7', '🔔', '🍒', '🍋'];
-        const PAYOUTS = {
-            '💎💎💎': 5000, 
-            '777': 2500,
-            '🔔🔔🔔': 1000,
-            '🍒🍒🍒': 500,
-            '🍋🍋🍋': 250,
-        };
-
-        // Roulette configuration
-        const ROULETTE_COST = 500; 
-        const ROULETTE_WHEEL = ['Red', 'Red', 'Black', 'Black', 'Green']; // Weighted wheel
-        const ROULETTE_PAYOUTS = {
-            'Red': 2,    
-            'Black': 2,  
-            'Green': 14, 
-        };
-
-        // Daily Bonus configuration
-        const DAILY_BONUS_AMOUNT = 500;
-        const COOLDOWN_HOURS = 24;
-
-        // Display the game costs in the UI
-        document.getElementById('slotsCostDisplay').textContent = COST_PER_SPIN;
-        document.getElementById('rouletteCostDisplay').textContent = ROULETTE_COST;
-
-        // =================================================================
-        //                       AUTHENTICATION & DATA
-        // =================================================================
-
-        async function handleAuth() {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const authMessage = document.getElementById('authMessage');
-            authMessage.textContent = 'Processing...';
-
-            let { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                if (error.message.includes('Invalid login credentials')) {
-                    const { data: { user: newUser }, error: signUpError } = await supabase.auth.signUp({ 
-                        email, 
-                        password 
-                    });
-
-                    if (signUpError) {
-                        authMessage.textContent = `Registration failed: ${signUpError.message}`;
-                        return;
-                    }
-                    
-                    user = newUser;
-                    // NOTE: If 'Confirm email' is ON in Supabase, the user MUST check their email before proceeding.
-                    authMessage.textContent = 'Registration successful! If your account doesn\'t log in, please check your Supabase Auth Settings to disable email confirmation.';
-                } else {
-                    authMessage.textContent = `Login failed: ${error.message}`;
-                    return;
-                }
-            } else {
-                authMessage.textContent = 'Login successful!';
-            }
-
-            if (user) {
-                // Logic for inserting the player profile if it's a new user
-                const { data: profile } = await supabase
-                    .from('players')
-                    .select('id')
-                    .eq('id', user.id)
-                    .maybeSingle();
-
-                if (!profile) {
-                    const { error: insertError } = await supabase
-                        .from('players')
-                        .insert([
-                            { 
-                                id: user.id, 
-                                username: email.split('@')[0], 
-                                diamonds: 5000, // Starting Diamonds
-                            }
-                        ]);
-                    if (insertError) {
-                        console.error('Profile insertion failed:', insertError);
-                    }
-                }
-                
-                loadUserData(); 
-            }
-        }
-
-        async function handleLogout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error('Logout error:', error);
-            }
-            
-            // Clear local state and update UI
-            currentUserID = null;
-            currentDiamonds = 0;
-            currentUsername = 'Guest';
-            isUserAdmin = false;
-
-            document.getElementById('authContainer').style.display = 'block';
-            document.getElementById('logoutButton').style.display = 'none';
-            document.getElementById('gameAreaContainer').style.display = 'none';
-            document.getElementById('adminPanelContainer').style.display = 'none';
-            document.getElementById('diamondCount').textContent = '0';
-            document.getElementById('welcomeMessage').textContent = 'Guest. Please log in to start.';
-        }
-        
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session?.user) {
-                // Only load data if the user just signed in or the session refreshed
-                if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                     loadUserData();
-                }
-            } else if (event === 'SIGNED_OUT') {
-                handleLogout();
-            }
-        });
-
-        async function loadUserData() {
-            // Ensure we have a user from the active session check
-            const user = (await supabase.auth.getUser()).data.user;
-            if (!user) {
-                updateGameUI(); 
-                return;
-            }
-
-            // This is the critical query that relies on the 'Allow user to read own profile' RLS policy
-            const { data: profile, error } = await supabase
-                .from('players')
-                .select('*') 
-                .eq('id', user.id)
-                .single();
-
-            if (error) {
-                console.error('Error fetching profile (Check RLS/Data Integrity):', error);
-                updateGameUI(); 
-                return;
-            }
-
-            // Update global variables
-            currentUserID = user.id;
-            currentUsername = profile.username;
-            currentDiamonds = profile.diamonds;
-            isUserAdmin = profile.is_admin; 
-            
-            // Update the UI
-            updateGameUI();
-            checkDailyBonusStatus(profile.last_daily_claim); 
-        }
-
-        function updateGameUI() {
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-            document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
-
-            document.getElementById('adminPanelContainer').style.display = isUserAdmin ? 'block' : 'none';
-            
-            // Handle display based on login status
-            const isLoggedIn = currentUserID !== null;
-            document.getElementById('authContainer').style.display = isLoggedIn ? 'none' : 'block';
-            document.getElementById('logoutButton').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('gameAreaContainer').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('authMessage').textContent = '';
-        }
-
-        // =================================================================
-        //                           GAME MODE SWITCH
-        // =================================================================
-        
-        function changeGameMode(mode) {
-            document.getElementById('slotsMode').style.display = mode === 'slots' ? 'block' : 'none';
-            document.getElementById('rouletteMode').style.display = mode === 'roulette' ? 'block' : 'none';
-            
-            document.getElementById('resultMessage').textContent = 'Click Start Slot Spin!';
-            document.getElementById('rouletteResultMessage').textContent = 'Pick your color to place a bet!';
-        }
-
-
-        // =================================================================
-        //                   SLOTS GAME LOGIC (OPTIMISTIC UI)
-        // =================================================================
-
-        function getRandomSymbol() {
-            return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-        }
-
-        function calculateWinnings(symbols) {
-            const symbolsString = symbols.join('');
-            if (PAYOUTS[symbolsString]) {
-                return PAYOUTS[symbolsString];
-            }
-            
-            if (symbols.filter(s => s === '💎').length === 2) {
-                return 200;
-            }
-            
-            return 0;
-        }
-
-        async function startGame() {
-            if (currentDiamonds < COST_PER_SPIN) {
-                document.getElementById('resultMessage').textContent = `You need ${COST_PER_SPIN} diamonds to play!`;
-                return;
-            }
-
-            const initialDiamonds = currentDiamonds; // Store for rollback
-            document.getElementById('startGameButton').disabled = true;
-
-            // 1. DEDUCT COST AND SPIN IMMEDIATELY (Optimistic Update)
-            currentDiamonds -= COST_PER_SPIN;
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-            document.getElementById('resultMessage').textContent = 'Spinning...';
-            document.getElementById('slotDisplay').textContent = '✨ ✨ ✨';
-
-            // 2. Perform Spin Animation 
-            await new Promise(resolve => setTimeout(resolve, 300)); 
-
-            const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-            const winnings = calculateWinnings(results);
-            currentDiamonds += winnings; // Update final diamond count locally
-
-            // 3. Update UI to Final Result Immediately
-            document.getElementById('slotDisplay').textContent = results.join(' ');
-            if (winnings > 0) {
-                document.getElementById('resultMessage').textContent = `WINNER! You won ${winnings.toLocaleString()} diamonds!`;
-            } else {
-                document.getElementById('resultMessage').textContent = 'Better luck next time!';
-            }
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString(); // Show final score
-
-            // 4. Send Database Update (Happens in background)
-            const { error } = await supabase
-                .from('players')
-                .update({ diamonds: currentDiamonds })
-                .eq('id', currentUserID);
-
-            // 5. Check for Network Error (Rollback if fails)
-            if (error) {
-                console.error('Database update failed, rolling back:', error);
-                currentDiamonds = initialDiamonds; // Rollback diamonds
-                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-                document.getElementById('resultMessage').textContent = `ERROR: Network failed. Please try again. Diamonds rolled back.`;
-            }
-            
-            document.getElementById('startGameButton').disabled = false;
-        }
-
-
-        // =================================================================
-        //                    ROULETTE GAME LOGIC (OPTIMISTIC UI)
-        // =================================================================
-        
-        async function startRoulette(playerGuess) {
-            if (currentDiamonds < ROULETTE_COST) {
-                document.getElementById('rouletteResultMessage').textContent = `You need ${ROULETTE_COST} diamonds to play!`;
-                return;
-            }
-            
-            const buttons = document.querySelectorAll('#rouletteMode button');
-            buttons.forEach(btn => btn.disabled = true);
-            const rouletteDisplay = document.getElementById('rouletteDisplay');
-            rouletteDisplay.className = 'game-display';
-            
-            const initialDiamonds = currentDiamonds; // Store for rollback
-
-            // 1. Deduct cost locally (Optimistic Update)
-            currentDiamonds -= ROULETTE_COST;
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-            document.getElementById('rouletteResultMessage').textContent = `Betting ${playerGuess} for ${ROULETTE_COST} diamonds...`;
-            rouletteDisplay.textContent = 'SPINNING...';
-            
-            // 2. Perform Spin Animation 
-            await new Promise(resolve => setTimeout(resolve, 500)); 
-            
-            // 3. Determine result
-            const winningColor = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
-            let winnings = 0;
-            let resultMessage = '';
-
-            // 4. Calculate Winnings and Update Local Score
-            rouletteDisplay.className = `game-display roulette-result-${winningColor.toLowerCase()}`;
-
-            if (playerGuess === winningColor) {
-                const payoutMultiplier = ROULETTE_PAYOUTS[winningColor];
-                winnings = ROULETTE_COST * payoutMultiplier;
-                currentDiamonds += winnings;
-                resultMessage = `🎉 WINNER! The wheel landed on ${winningColor}. You won ${winnings.toLocaleString()} diamonds!`;
-            } else {
-                resultMessage = `❌ LOSS! The wheel landed on ${winningColor}. Better luck next time.`;
-            }
-
-            // 5. Update UI to Final Result Immediately
-            rouletteDisplay.textContent = winningColor;
-            document.getElementById('rouletteResultMessage').textContent = resultMessage;
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-
-            // 6. Send Database Update (Happens in background)
-            const { error } = await supabase
-                .from('players')
-                .update({ diamonds: currentDiamonds })
-                .eq('id', currentUserID);
-
-            // 7. Check for Network Error (Rollback if fails)
-            if (error) {
-                console.error('Roulette Database update failed, rolling back:', error);
-                currentDiamonds = initialDiamonds; // Rollback diamonds
-                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-                document.getElementById('rouletteResultMessage').textContent = `ERROR: Network failed. Diamonds rolled back.`;
-            }
-            
-            // 8. Re-enable buttons
-            buttons.forEach(btn => btn.disabled = false);
-        }
-
-        // =================================================================
-        //                          ADMIN PANEL
-        // =================================================================
-        
-        async function updateUserDiamonds() {
-            const targetUserId = document.getElementById('targetUserId').value;
-            const newAmount = parseInt(document.getElementById('newDiamondAmount').value);
-            const adminMessage = document.getElementById('adminMessage');
-
-            if (!targetUserId || isNaN(newAmount) || newAmount < 0) {
-                adminMessage.textContent = 'Please enter a valid User ID (UUID) and a positive Diamond amount.';
-                return;
-            }
-            
-            adminMessage.textContent = 'Updating...';
-
-            const { data, error } = await supabase
-                .from('players')
-                .update({ diamonds: newAmount })
-                .eq('id', targetUserId); 
-
-            if (error && error.code !== '42501') {
-                adminMessage.textContent = `Error: ${error.message}`;
-                console.error('Admin Update Error:', error);
-            } else if (error && error.code === '42501') {
-                adminMessage.textContent = 'Permission Denied. (Check RLS or admin status)'; 
-            } else {
-                adminMessage.textContent = `Successfully set User ${targetUserId} diamonds to ${newAmount.toLocaleString()}`;
-                if (targetUserId === currentUserID) {
-                    currentDiamonds = newAmount;
-                    document.getElementById('diamondCount').textContent = newAmount.toLocaleString();
-                }
-            }
-        }
-
-
-        // =================================================================
-        //                         DAILY BONUS
-        // =================================================================
-
-        function isDailyBonusReady(lastClaimTimestamp) {
-            if (!lastClaimTimestamp || lastClaimTimestamp === 'null') return true; 
-
-            try {
-                const lastClaim = new Date(lastClaimTimestamp);
-                const now = new Date();
-                const timeDifferenceMs = now - lastClaim;
-                const cooldownMs = COOLDOWN_HOURS * 60 * 60 * 1000;
-                
-                return timeDifferenceMs >= cooldownMs;
-            } catch (e) {
-                console.error("Error parsing timestamp:", e, lastClaimTimestamp);
-                return true; 
-            }
-        }
-
-        async function checkDailyBonusStatus(lastDailyClaimFromProfile) {
-            const bonusButton = document.getElementById('dailyBonusButton');
-            const bonusMessage = document.getElementById('dailyBonusMessage');
-            bonusMessage.textContent = ''; 
-
-            if (!currentUserID) {
-                bonusButton.textContent = 'Daily Bonus (Login)';
-                bonusButton.disabled = true;
-                return;
-            }
-            
-            const lastClaim = lastDailyClaimFromProfile;
-
-            if (isDailyBonusReady(lastClaim)) {
-                bonusButton.textContent = `Daily Bonus READY! (+${DAILY_BONUS_AMOUNT}💎)`;
-                bonusButton.disabled = false;
-            } else {
-                const lastClaimTime = new Date(lastClaim).getTime();
-                const nowTime = new Date().getTime();
-                const remainingMs = (COOLDOWN_HOURS * 60 * 60 * 1000) - (nowTime - lastClaimTime);
-                const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
-                
-                bonusButton.textContent = `Daily Bonus (${remainingHours}h remaining)`;
-                bonusButton.disabled = true;
-            }
-        }
-
-        async function claimDailyBonus() {
-            if (!currentUserID) return; 
-
-            const initialDiamonds = currentDiamonds; // Store for rollback
-            const newClaimTime = new Date().toISOString();
-            
-            // Optimistic Update: Assume success and update UI immediately
-            currentDiamonds += DAILY_BONUS_AMOUNT;
-            document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-            document.getElementById('dailyBonusMessage').textContent = `+${DAILY_BONUS_AMOUNT} Diamonds claimed! See you in ${COOLDOWN_HOURS} hours.`;
-            document.getElementById('dailyBonusButton').disabled = true; 
-
-            // Send database update in background
-            const { data: updatedData, error: updateError } = await supabase
-                .from('players')
-                .update({ 
-                    diamonds: currentDiamonds,
-                    last_daily_claim: newClaimTime
-                })
-                .eq('id', currentUserID)
-                .select('last_daily_claim')
-                .single();
-                
-            // Check for Network Error (Rollback if fails)
-            if (updateError) {
-                currentDiamonds = initialDiamonds; // Rollback diamonds
-                document.getElementById('diamondCount').textContent = currentDiamonds.toLocaleString();
-                document.getElementById('dailyBonusMessage').textContent = 'ERROR: Failed to claim bonus. Diamonds rolled back.';
-                console.error(updateError);
-                document.getElementById('dailyBonusButton').disabled = false;
-                return;
-            }
-
-            // If successful, update status
-            checkDailyBonusStatus(newClaimTime);
-        }
-
-        // =================================================================
-        //                         LIVE LEADERBOARD
-        // =================================================================
-
-        function openLeaderboardModal() {
-            if (!realtimeChannel) {
-                subscribeToLeaderboard();
-            }
-            fetchLeaderboardData();
-            document.getElementById('leaderboardModal').style.display = 'block';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            if (realtimeChannel) {
-                supabase.removeChannel(realtimeChannel);
-                realtimeChannel = null;
-            }
-        }
-        
-        window.onclick = function(event) {
-            const modal = document.getElementById('leaderboardModal');
-            if (event.target == modal) {
-                closeModal('leaderboardModal');
-            }
-        }
-
-        async function fetchLeaderboardData() {
-            const { data, error } = await supabase
-                .from('players')
-                .select('username, diamonds')
-                .order('diamonds', { ascending: false })
-                .limit(10);
-
-            if (error) {
-                console.error('Error fetching leaderboard:', error);
-                document.getElementById('leaderboardBody').innerHTML = '<tr><td colspan="3">Failed to load leaderboard.</td></tr>';
-                return;
-            }
-
-            renderLeaderboard(data);
-        }
-
-        function renderLeaderboard(data) {
-            const body = document.getElementById('leaderboardBody');
-            body.innerHTML = '';
-            
-            data.forEach((player, index) => {
-                const row = body.insertRow();
-                const rankCell = row.insertCell(0);
-                const userCell = row.insertCell(1);
-                const diamondCell = row.insertCell(2);
-
-                rankCell.textContent = index + 1;
-                userCell.textContent = player.username;
-                diamondCell.textContent = player.diamonds.toLocaleString();
-
-                row.style.background = (index % 2 === 0) ? '#3a1e74' : '#4a2e84';
-                row.style.color = (player.username === currentUsername) ? '#00ffff' : 'white';
-                row.style.fontWeight = (player.username === currentUsername) ? 'bold' : 'normal';
-                
-                rankCell.style.padding = '10px';
-                userCell.style.padding = '10px';
-                diamondCell.style.padding = '10px';
-            });
-        }
-
-        function subscribeToLeaderboard() {
-            realtimeChannel = supabase
-                .channel('leaderboard-changes')
-                .on(
-                    'postgres_changes',
-                    { 
-                        event: 'UPDATE', 
-                        schema: 'public', 
-                        table: 'players', 
-                        filter: 'diamonds=neq.null' 
-                    },
-                    (payload) => {
-                        fetchLeaderboardData(); 
-                    }
-                )
-                .subscribe();
-        }
-
-        // =================================================================
-        // 2. CRITICAL INITIALIZATION WRAPPER
-        // =================================================================
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Check for the client's existence to avoid ReferenceError
-            if (typeof supabase === 'undefined') {
-                console.error("Supabase client is not loaded. Check the <script> tag link in the <head>.");
-                return;
-            }
-
-            // Initialize the app after all DOM content is loaded
-            loadUserData();
-            changeGameMode('slots'); // Start on the slots page
-        });
-
-    </script>
-
+    <button id="logoutButton" onclick="handleLogout()" style="display: none;">Logout</button>
+  </div>
+
+  <div id="gameAreaContainer" style="display: none;">
+    <h1 class="main-title">DIAMOND CASINO</h1>
+
+    <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+      <button onclick="changeGameMode('slots')" id="slotsButton">🎰 Slots</button>
+      <button onclick="changeGameMode('roulette')" id="rouletteButton">🔴 Roulette</button>
+      <button id="dailyBonusButton" onclick="claimDailyBonus()">Daily Bonus</button>
+      <button onclick="openLeaderboardModal()">🏆 Live Leaderboard</button>
+    </div>
+
+    <p id="dailyBonusMessage" class="message-box"></p>
+
+    <div id="slotsMode">
+      <h2>Diamond Slots ($<span id="slotsCostDisplay">100</span> per spin)</h2>
+      <button id="startGameButton" onclick="startGame()">Start Slot Spin</button>
+      <div class="game-display" id="slotDisplay">-- -- --</div>
+      <p id="resultMessage" class="message-box">Click Start Slot Spin!</p>
+    </div>
+
+    <div id="rouletteMode" style="display:none;">
+      <h2>Roulette ($<span id="rouletteCostDisplay">500</span> per spin)</h2>
+      <div style="margin-bottom: 10px;">
+        <button onclick="startRoulette('Red')" style="background-color: #ff3333;">Bet Red (2x)</button>
+        <button onclick="startRoulette('Black')" style="background-color: #333333;">Bet Black (2x)</button>
+        <button onclick="startRoulette('Green')" style="background-color: #33ff33; color:black;">Bet Green (14x)</button>
+      </div>
+      <div class="game-display" id="rouletteDisplay">Spin the Wheel!</div>
+      <p id="rouletteResultMessage" class="message-box">Pick your color to place a bet!</p>
+    </div>
+
+    <div id="adminPanelContainer" class="admin-panel" style="display:none;">
+      <h3>Admin Panel</h3>
+      <input type="text" id="targetUserId" placeholder="Target User UUID" style="width:300px;">
+      <input type="number" id="newDiamondAmount" placeholder="New Diamond Amount">
+      <button onclick="updateUserDiamonds()">Set Diamonds</button>
+      <p id="adminMessage" style="color:yellow;"></p>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('leaderboardModal')">&times;</span>
+      <h2>🏆 Live Leaderboard</h2>
+      <table id="leaderboardTable" style="width:100%; border-collapse:collapse; margin-top:20px;">
+        <thead>
+          <tr>
+            <th style="padding:10px; border-bottom:1px solid #00ffff;">Rank</th>
+            <th style="padding:10px; border-bottom:1px solid #00ffff;">Username</th>
+            <th style="padding:10px; border-bottom:1px solid #00ffff;">Diamonds</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Supabase credentials
+    const SUPABASE_URL = 'https://qknwaibcivwzmdwdjluq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // truncated for safety
+    let supabaseClient;
+    let currentUserID = null, currentUsername = 'Guest', currentDiamonds = 0, isUserAdmin = false;
+
+    const SYMBOLS = ['💎','7','🔔','🍒','🍋'];
+    const PAYOUTS = {'💎💎💎':5000,'777':2500,'🔔🔔🔔':1000,'🍒🍒🍒':500,'🍋🍋🍋':250};
+    const COST_PER_SPIN = 100;
+    const ROULETTE_COST = 500;
+    const ROULETTE_WHEEL = ['Red','Red','Black','Black','Green'];
+    const ROULETTE_PAYOUTS = {'Red':2,'Black':2,'Green':14};
+    const DAILY_BONUS_AMOUNT = 500;
+
+    // ✅ Helper: fade out loading
+    function hideLoading() {
+      const loader = document.getElementById('loadingScreen');
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 700);
+    }
+
+    // ✅ Lazy init Supabase
+    window.addEventListener('load', async () => {
+      hideLoading();
+
+      // Wait for script to load
+      const waitForSupabase = () => new Promise(res => {
+        const check = () => (window.supabase ? res(window.supabase) : setTimeout(check, 50));
+        check();
+      });
+      const sb = await waitForSupabase();
+
+      supabaseClient = sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      document.getElementById('slotsCostDisplay').textContent = COST_PER_SPIN;
+      document.getElementById('rouletteCostDisplay').textContent = ROULETTE_COST;
+
+      // Check existing session (instant)
+      const { data: session } = await supabaseClient.auth.getSession();
+      if (session?.session?.user) {
+        loadUserData();
+      } else {
+        document.getElementById('authContainer').style.display = 'block';
+      }
+      changeGameMode('slots');
+    });
+
+    async function handleAuth() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const msg = document.getElementById('authMessage');
+      msg.textContent = 'Processing...';
+
+      let { data: { user }, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        const { data: { user: newUser }, error: signUpErr } = await supabaseClient.auth.signUp({ email, password });
+        if (signUpErr) { msg.textContent = signUpErr.message; return; }
+        user = newUser;
+      }
+      if (user) loadUserData();
+    }
+
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+      currentUserID = null;
+      currentDiamonds = 0;
+      document.getElementById('gameAreaContainer').style.display = 'none';
+      document.getElementById('authContainer').style.display = 'block';
+      document.getElementById('diamondCount').textContent = 0;
+      document.getElementById('welcomeMessage').textContent = 'Guest';
+    }
+
+    async function loadUserData() {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if (!userData.user) return;
+      const { data: profile } = await supabaseClient
+        .from('players')
+        .select('id, username, diamonds, is_admin, last_daily_claim')
+        .eq('id', userData.user.id)
+        .single();
+      if (!profile) return;
+      currentUserID = profile.id;
+      currentUsername = profile.username;
+      currentDiamonds = profile.diamonds;
+      isUserAdmin = profile.is_admin;
+      document.getElementById('diamondCount').textContent = currentDiamonds;
+      document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUsername}!`;
+      document.getElementById('authContainer').style.display = 'none';
+      document.getElementById('logoutButton').style.display = 'block';
+      document.getElementById('gameAreaContainer').style.display = 'block';
+    }
+
+    function changeGameMode(mode) {
+      document.getElementById('slotsMode').style.display = (mode === 'slots') ? 'block' : 'none';
+      document.getElementById('rouletteMode').style.display = (mode === 'roulette') ? 'block' : 'none';
+    }
+
+    function getRandomSymbol() { return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]; }
+    function calculateWinnings(syms) {
+      const s = syms.join('');
+      if (PAYOUTS[s]) return PAYOUTS[s];
+      if (syms.filter(x => x === '💎').length === 2) return 200;
+      return 0;
+    }
+
+    async function startGame() {
+      if (currentDiamonds < COST_PER_SPIN) return;
+      currentDiamonds -= COST_PER_SPIN;
+      document.getElementById('diamondCount').textContent = currentDiamonds;
+      const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+      const win = calculateWinnings(results);
+      currentDiamonds += win;
+      document.getElementById('slotDisplay').textContent = results.join(' ');
+      document.getElementById('resultMessage').textContent = win > 0 ? `You won ${win}!` : 'Try again!';
+      document.getElementById('diamondCount').textContent = currentDiamonds;
+      supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
+    }
+
+    async function startRoulette(choice) {
+      if (currentDiamonds < ROULETTE_COST) return;
+      currentDiamonds -= ROULETTE_COST;
+      document.getElementById('diamondCount').textContent = currentDiamonds;
+      const color = ROULETTE_WHEEL[Math.floor(Math.random() * ROULETTE_WHEEL.length)];
+      const mult = (choice === color) ? ROULETTE_PAYOUTS[color] : 0;
+      if (mult > 0) currentDiamonds += ROULETTE_COST * mult;
+      document.getElementById('rouletteDisplay').textContent = color;
+      document.getElementById('rouletteResultMessage').textContent = mult > 0 ? `Win ${ROULETTE_COST * mult}!` : 'You lost!';
+      document.getElementById('diamondCount').textContent = currentDiamonds;
+      supabaseClient.from('players').update({ diamonds: currentDiamonds }).eq('id', currentUserID);
+    }
+  </script>
 </body>
 </html>
